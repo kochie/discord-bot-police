@@ -13,7 +13,10 @@
         "logConfiguration": {
             "logDriver": "awslogs",
             "options": {
-                "awslogs-create-group": "true"
+                "awslogs-create-group": "true",
+                "awslogs-region": "ap-southeast-2",
+                "awslogs-group": "ecs",
+                "awslogs-stream-prefix": "discord-bot-police"
             }
         }
       }
