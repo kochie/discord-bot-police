@@ -9,7 +9,13 @@
         "secrets": [{
             "name": "DISCORD_TOKEN",
             "valueFrom": "DISCORD_TOKEN"
-        }]
+        }],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-create-group": true
+            }
+        }
       }
     ],
     "requiresCompatibilities": [
