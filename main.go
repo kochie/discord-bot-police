@@ -7,9 +7,16 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
+
+type UserWarnings struct {
+	Username    string    `json:username`
+	Warnings    int       `json:warnings`
+	LastWarning time.Time `json:last_warning`
+}
 
 func main() {
 	token := os.Getenv("DISCORD_TOKEN")

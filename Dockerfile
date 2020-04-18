@@ -1,7 +1,7 @@
 FROM golang:latest as golang
 WORKDIR /go/src/policebot
 COPY . .
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o policebot
+RUN make build 
 # RUN chmod +x policebot
 
 
