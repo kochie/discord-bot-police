@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -49,17 +50,20 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
 
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
-	}
-
-	if strings.Contains(m.Content, "anime") {
+	if strings.Contains(strings.ToLower(m.Content), "anime") {
 		s.MessageReactionAdd(m.ChannelID, m.ID, "😡")
+		file, err := os.Open("assets/anime_ban_1.jpg")
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+			Files: []*discordgo.File{{
+				Name:        "anime.jpg",
+				ContentType: "image/jpeg",
+				Reader:      file,
+			}},
+		})
 	}
 }
