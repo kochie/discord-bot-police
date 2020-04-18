@@ -15,7 +15,7 @@
     "requiresCompatibilities": [
       "FARGATE"
     ],
-    "executionRoleArn": "ecsTaskExecutionRole",
+    "executionRoleArn": "discordBotTaskExecutionRole",
     "cpu": "256",
     "memory": "512"
   }
