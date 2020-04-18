@@ -1,3 +1,21 @@
 {
-    
-}
+    "family": "discord-bot-police",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+      {
+        "name": "discord-bot-police",
+        "image": "discord-bot-police",
+        "essential": true,
+        "secrets": [{
+            "name": "DISCORD_TOKEN",
+            "valueFrom": "DISCORD_TOKEN"
+        }]
+      }
+    ],
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "executionRoleArn": "ecsTaskExecutionRole",
+    "cpu": "256",
+    "memory": "512"
+  }
