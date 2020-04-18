@@ -76,6 +76,6 @@ jobs:
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
         task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: discord-police-bot
-        cluster: default
+        service: discord-bot-police
+        cluster: discord-bot-police
         wait-for-service-stability: true
