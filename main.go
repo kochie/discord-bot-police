@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -16,6 +17,16 @@ type UserWarnings struct {
 	Username    string    `json:username`
 	Warnings    int       `json:warnings`
 	LastWarning time.Time `json:last_warning`
+}
+
+var reg *regexp.Regexp
+
+func init() {
+	r, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	reg = r
 }
 
 func main() {
@@ -58,7 +69,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if strings.Contains(strings.ToLower(m.Content), "anime") {
+	processedString := reg.ReplaceAllString(strings.ToLower(m.Content), "")
+
+	if strings.Contains(processedString, "anime") {
 		s.MessageReactionAdd(m.ChannelID, m.ID, "😡")
 		file, err := os.Open("assets/anime_ban_1.jpg")
 		if err != nil {
