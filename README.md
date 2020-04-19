@@ -1,3 +1,4 @@
+![Deploy to Amazon ECS](https://github.com/kochie/discord-bot-police/workflows/Deploy%20to%20Amazon%20ECS/badge.svg)
 <img align="right" src="http://bwmarrin.github.io/discordgo/img/discordgo.png">
 
 ## DiscordGo Ping Pong Example
