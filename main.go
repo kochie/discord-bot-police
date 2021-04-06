@@ -129,6 +129,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				for _, celeb := range result.CelebrityFaces {
 					if *celeb.Name == "Steve Buscemi" {
 						isSteveBuscemi = true
+						break
 					}
 				}
 			}
