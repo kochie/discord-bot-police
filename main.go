@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"io/ioutil"
@@ -99,6 +98,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.ChannelID == "794074793388408832" {
 		isSteveBuscemi := false
+		celebLength := 0
+		unknownFacesLength := 0
 		for _, atta := range m.Attachments {
 			if strings.HasSuffix(atta.Filename, ".png") ||
 				strings.HasSuffix(atta.Filename, ".jpeg") ||
@@ -113,10 +114,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					fmt.Println("Error reading the response, ", err)
 					continue
 				}
-				contentType := http.DetectContentType(img)
-				base64img := base64.StdEncoding.EncodeToString(img)
-
-				log.Println(fmt.Sprintf("data:%s;base64,%s", contentType, base64img))
+				//contentType := http.DetectContentType(img)
+				//base64img := base64.StdEncoding.EncodeToString(img)
+				//
+				//log.Println(fmt.Sprintf("data:%s;base64,%s", contentType, base64img))
 				result, err := rek.RecognizeCelebrities(context.Background(), &rekognition.RecognizeCelebritiesInput{
 					Image: &types.Image{
 						Bytes: img,
@@ -126,6 +127,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					log.Println(err)
 					continue
 				}
+				celebLength += len(result.CelebrityFaces)
+				unknownFacesLength += len(result.UnrecognizedFaces)
 
 				for _, celeb := range result.CelebrityFaces {
 					if *celeb.Name == "Steve Buscemi" {
@@ -136,7 +139,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 
-		if len(m.Attachments) > 0 && !isSteveBuscemi {
+		if len(m.Attachments) > 0 && (!isSteveBuscemi && celebLength > 0) {
 			err := s.ChannelMessageDelete(m.ChannelID, m.ID)
 			if err != nil {
 				log.Println(err)
