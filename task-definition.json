@@ -18,14 +18,14 @@
                 "awslogs-group": "ecs",
                 "awslogs-stream-prefix": "discord-bot-police"
             }
-        },
-        "taskRoleArn": "arn:aws:iam::457234467265:role/discordBotRole"
+        }
       }
     ],
     "requiresCompatibilities": [
       "FARGATE"
     ],
     "executionRoleArn": "discordBotTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::457234467265:role/discordBotRole",
     "cpu": "256",
     "memory": "512"
   }
