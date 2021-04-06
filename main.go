@@ -119,7 +119,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				log.Println(fmt.Sprintf("data:%s;base64,%s", contentType, base64img))
 				result, err := rek.RecognizeCelebrities(context.Background(), &rekognition.RecognizeCelebritiesInput{
 					Image: &types.Image{
-						Bytes: []byte(base64img),
+						Bytes: img,
 					},
 				})
 				if err != nil {
