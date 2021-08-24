@@ -1,31 +1,34 @@
 {
-    "family": "discord-bot-police",
-    "networkMode": "awsvpc",
-    "containerDefinitions": [
-      {
-        "name": "discord-bot-police",
-        "image": "discord-bot-police",
-        "essential": true,
-        "secrets": [{
-            "name": "DISCORD_TOKEN",
-            "valueFrom": "DISCORD_TOKEN"
-        }],
-        "logConfiguration": {
-            "logDriver": "awslogs",
-            "options": {
-                "awslogs-create-group": "true",
-                "awslogs-region": "ap-southeast-2",
-                "awslogs-group": "ecs",
-                "awslogs-stream-prefix": "discord-bot-police"
-            }
+  "family": "discord-bot-police",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "discord-bot-police",
+      "image": "discord-bot-police",
+      "essential": true,
+      "secrets": [
+        {
+          "name": "DISCORD_TOKEN",
+          "valueFrom": "DISCORD_TOKEN"
+        }
+      ],
+      "environment": [
+        { "name": "DAFOE_CHANNEL_ID", "value": "879574896139714611" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-southeast-2",
+          "awslogs-group": "ecs",
+          "awslogs-stream-prefix": "discord-bot-police"
         }
       }
-    ],
-    "requiresCompatibilities": [
-      "FARGATE"
-    ],
-    "executionRoleArn": "discordBotTaskExecutionRole",
-    "taskRoleArn": "arn:aws:iam::457234467265:role/discordBotRole",
-    "cpu": "256",
-    "memory": "512"
-  }
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "executionRoleArn": "discordBotTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::457234467265:role/discordBotRole",
+  "cpu": "256",
+  "memory": "512"
+}

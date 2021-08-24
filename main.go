@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
@@ -44,6 +45,31 @@ func main() {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
+
+	ticker := time.NewTicker(24 * time.Hour)
+	done := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				file, err := os.Open("assets/dafoe.gif")
+				if err != nil {
+					log.Println(err)
+
+				}
+				dg.ChannelMessageSendComplex(os.Getenv("DAFOE_CHANNEL_ID"), &discordgo.MessageSend{
+					Files: []*discordgo.File{{
+						Name:        "dafoe.gif",
+						ContentType: "image/gif",
+						Reader:      file,
+					}},
+				})
+			}
+		}
+	}()
 
 	// Register the messageCreate func as a callback for MessageCreate events.
 	dg.AddHandler(messageCreate)
