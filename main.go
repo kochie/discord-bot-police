@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
@@ -36,6 +38,46 @@ func init() {
 	reg = r
 }
 
+func dafoe(dg *discordgo.Session) {
+	file, err := os.Open("assets/dafoe.gif")
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = dg.ChannelMessageSendComplex(os.Getenv("DAFOE_CHANNEL_ID"), &discordgo.MessageSend{
+		Files: []*discordgo.File{{
+			Name:        "dafoe.gif",
+			ContentType: "image/gif",
+			Reader:      file,
+		}},
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+var simps = []string{
+	"assets/simp1.gif",
+	"assets/simp2.gif",
+	"assets/simp1.jpg",
+	"assets/simp2.jpg",
+	"assets/simp3.jpg",
+	"assets/simp4.jpg",
+}
+
+func getContentType(filename string) string {
+	extension := filepath.Ext(filename)
+	switch extension {
+	case ".jpg":
+		return "image/jpeg"
+	case ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	default:
+		return ""
+	}
+}
+
 func main() {
 	token := os.Getenv("DISCORD_TOKEN")
 
@@ -46,30 +88,20 @@ func main() {
 		return
 	}
 
-	ticker := time.NewTicker(24 * time.Hour)
-	done := make(chan bool)
+	// ticker := time.NewTicker(24 * time.Hour)
+	// done := make(chan bool)
 
-	go func() {
-		for {
-			select {
-			case <-done:
-				return
-			case <-ticker.C:
-				file, err := os.Open("assets/dafoe.gif")
-				if err != nil {
-					log.Println(err)
-
-				}
-				dg.ChannelMessageSendComplex(os.Getenv("DAFOE_CHANNEL_ID"), &discordgo.MessageSend{
-					Files: []*discordgo.File{{
-						Name:        "dafoe.gif",
-						ContentType: "image/gif",
-						Reader:      file,
-					}},
-				})
-			}
-		}
-	}()
+	// go func() {
+	// 	dafoe(dg)
+	// 	for {
+	// 		select {
+	// 		case <-done:
+	// 			return
+	// 		case <-ticker.C:
+	// 			dafoe(dg)
+	// 		}
+	// 	}
+	// }()
 
 	// Register the messageCreate func as a callback for MessageCreate events.
 	dg.AddHandler(messageCreate)
@@ -84,7 +116,7 @@ func main() {
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, syscall.SIGTERM)
 	<-sc
 
 	// Cleanly close down the Discord session.
@@ -92,7 +124,7 @@ func main() {
 }
 
 // This function will be called (due to AddHandler above) every time a new
-// message is created on any channel that the autenticated bot has access to.
+// message is created on any channel that the authenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
@@ -105,10 +137,20 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.Contains(processedString, "anime") {
 		err := s.MessageReactionAdd(m.ChannelID, m.ID, "😡")
-		file, err := os.Open("assets/anime_ban_1.jpg")
 		if err != nil {
 			log.Println(err)
+		}
 
+		filename := ""
+		if rand.Float64() > 0.5 {
+			filename = "assets/anime_ban_1.jpg"
+		} else {
+			filename = "assets/anime_ban_2.jpg"
+		}
+		file, err := os.Open(filename)
+
+		if err != nil {
+			log.Println(err)
 		}
 		_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 			Files: []*discordgo.File{{
@@ -119,6 +161,28 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		})
 		if err != nil {
 			log.Println(err)
+		}
+		file.Close()
+	}
+
+	if m.Author.ID == "436505374162681856" {
+		if strings.Contains(processedString, "caitlin") {
+			filename := simps[rand.Intn(len(simps))]
+
+			file, err := os.Open(filename)
+			if err != nil {
+				log.Println(err)
+			}
+			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+				Files: []*discordgo.File{{
+					Name:        filepath.Base(filename),
+					ContentType: getContentType(filename),
+					Reader:      file,
+				}},
+			})
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 
