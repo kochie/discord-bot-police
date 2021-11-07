@@ -13,7 +13,8 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
-	"time"
+
+	// "time"
 
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 
@@ -22,11 +23,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type UserWarnings struct {
-	Username    string    `json:username`
-	Warnings    int       `json:warnings`
-	LastWarning time.Time `json:last_warning`
-}
+// type UserWarnings struct {
+// 	Username    string    `json:username`
+// 	Warnings    int       `json:warnings`
+// 	LastWarning time.Time `json:last_warning`
+// }
 
 var reg *regexp.Regexp
 
@@ -38,22 +39,22 @@ func init() {
 	reg = r
 }
 
-func dafoe(dg *discordgo.Session) {
-	file, err := os.Open("assets/dafoe.gif")
-	if err != nil {
-		log.Println(err)
-	}
-	_, err = dg.ChannelMessageSendComplex(os.Getenv("DAFOE_CHANNEL_ID"), &discordgo.MessageSend{
-		Files: []*discordgo.File{{
-			Name:        "dafoe.gif",
-			ContentType: "image/gif",
-			Reader:      file,
-		}},
-	})
-	if err != nil {
-		log.Println(err)
-	}
-}
+// func dafoe(dg *discordgo.Session) {
+// 	file, err := os.Open("assets/dafoe.gif")
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
+// 	_, err = dg.ChannelMessageSendComplex(os.Getenv("DAFOE_CHANNEL_ID"), &discordgo.MessageSend{
+// 		Files: []*discordgo.File{{
+// 			Name:        "dafoe.gif",
+// 			ContentType: "image/gif",
+// 			Reader:      file,
+// 		}},
+// 	})
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
+// }
 
 var simps = []string{
 	"assets/simp1.gif",
@@ -73,6 +74,8 @@ func getContentType(filename string) string {
 		return "image/jpeg"
 	case ".gif":
 		return "image/gif"
+	case ".mp4":
+		return "video/mp4"
 	default:
 		return ""
 	}
@@ -165,7 +168,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		file.Close()
 	}
 
-	if m.Author.ID == "436505374162681856" || m.Author.ID == "214300034181758977" {
+	if m.Author.ID == os.Getenv("SIMP_ID") {
 		if strings.Contains(processedString, "caitlin") {
 			filename := simps[rand.Intn(len(simps))]
 
@@ -186,7 +189,31 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if m.ChannelID == "794074793388408832" {
+	if strings.Contains(processedString, "communist") ||
+		strings.Contains(processedString, "commie") {
+		filename := "assets/Joseph_McCarthy.jpg"
+
+		if m.Author.ID == os.Getenv("KNOWN_COMMUNIST_ID") {
+			filename = "assets/commie.mp4"
+		}
+
+		file, err := os.Open(filename)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+			Files: []*discordgo.File{{
+				Name:        filepath.Base(filename),
+				ContentType: getContentType(filename),
+				Reader:      file,
+			}},
+		})
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	if m.ChannelID == os.Getenv("BUSCEMI_ID") {
 		isSteveBuscemi := false
 		celebLength := 0
 		unknownFacesLength := 0
