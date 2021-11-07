@@ -165,7 +165,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		file.Close()
 	}
 
-	if m.Author.ID == "436505374162681856" {
+	if m.Author.ID == "436505374162681856" || m.Author.ID == "214300034181758977" {
 		if strings.Contains(processedString, "caitlin") {
 			filename := simps[rand.Intn(len(simps))]
 
