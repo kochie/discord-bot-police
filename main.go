@@ -207,7 +207,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		"lenin",
 		"marx",
 		"stalin",
-		"kermit the frog",
+		"kermitthefrog",
 	}) {
 		filename := "assets/Joseph_McCarthy.jpg"
 
