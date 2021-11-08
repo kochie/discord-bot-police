@@ -126,6 +126,16 @@ func main() {
 	dg.Close()
 }
 
+func compareList(phrase string, comparisionList []string) bool {
+	for _, word := range comparisionList {
+		if strings.Contains(phrase, word) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the authenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -189,8 +199,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if strings.Contains(processedString, "communist") ||
-		strings.Contains(processedString, "commie") {
+	if compareList(processedString, []string{
+		"communist",
+		"commie",
+		"communism",
+		"redscare",
+		"lenin",
+		"marx",
+		"stalin",
+		"kermit the frog",
+	}) {
 		filename := "assets/Joseph_McCarthy.jpg"
 
 		if m.Author.ID == os.Getenv("KNOWN_COMMUNIST_ID") {
