@@ -14,9 +14,9 @@
       ],
       "environment": [
         { "name": "DAFOE_CHANNEL_ID", "value": "879574896139714611" },
-        { "name": "SIMP_ID", "value": "436505374162681856" },
+        { "name": "SIMP_ID", "value": "258174326581362689" },
         { "name": "BUSCEMI_ID", "value": "794074793388408832" },
-        { "name": "KNOWN_COMMUNIST_ID", "value": "906809422561550366" }
+        { "name": "KNOWN_COMMUNIST_ID", "value": "255261917348626432" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

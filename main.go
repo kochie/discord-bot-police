@@ -185,6 +185,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			file, err := os.Open(filename)
 			if err != nil {
 				log.Println(err)
+				return
 			}
 			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 				Files: []*discordgo.File{{
