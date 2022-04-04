@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -20,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
+	"github.com/bwmarrin/dgvoice"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -30,13 +32,29 @@ import (
 // }
 
 var reg *regexp.Regexp
+var reg1 *regexp.Regexp
+
+var rek *rekognition.Client
+
 
 func init() {
 	r, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {
 		log.Fatal(err)
 	}
+	r1, err := regexp.Compile("[0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
 	reg = r
+	reg1 = r1
+
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rek = rekognition.NewFromConfig(cfg)
 }
 
 // func dafoe(dg *discordgo.Session) {
@@ -232,6 +250,31 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+	if m.ChannelID == os.Getenv("PIZZAGATE_ID") {
+		if reg1.MatchString(m.Content) {
+			taunt, err := strconv.ParseInt(processedString, 10, 32)
+			if err != nil {
+				log.Println(err)
+			}
+			entries, err := os.ReadDir("assets/taunts")
+			if err != nil {
+				log.Println(err)
+			}
+			// data, err := os.ReadFile("assets/taunts/" + entries[taunt].Name())
+			// if err != nil {
+			// 	log.Println(err)
+			// }
+
+			dgv, err := dg.ChannelVoiceJoin(*GuildID, os.Getenv("FOW_ID"), false, true)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			dgvoice.PlayAudioFile(dgv, "assets/taunts/" + entries[taunt].Name()), make(chan bool))
+			dgv.Close()
+		}
+	}
+
 	if m.ChannelID == os.Getenv("BUSCEMI_ID") {
 		isSteveBuscemi := false
 		celebLength := 0
@@ -299,15 +342,4 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 	}
-}
-
-var rek *rekognition.Client
-
-func init() {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rek = rekognition.NewFromConfig(cfg)
 }
