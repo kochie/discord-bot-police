@@ -13,7 +13,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	// "time"
 
@@ -36,13 +38,12 @@ var reg1 *regexp.Regexp
 
 var rek *rekognition.Client
 
-
 func init() {
 	r, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {
 		log.Fatal(err)
 	}
-	r1, err := regexp.Compile("[0-9]+")
+	r1, err := regexp.Compile("^\\d+$")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,6 +56,7 @@ func init() {
 	}
 
 	rek = rekognition.NewFromConfig(cfg)
+	mutex = &sync.Mutex{}
 }
 
 // func dafoe(dg *discordgo.Session) {
@@ -100,7 +102,10 @@ func getContentType(filename string) string {
 }
 
 func main() {
+	fmt.Println("Hello, World,4")
 	token := os.Getenv("DISCORD_TOKEN")
+
+	fmt.Println("Hello", token)
 
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + token)
@@ -141,7 +146,10 @@ func main() {
 	<-sc
 
 	// Cleanly close down the Discord session.
-	dg.Close()
+	err = dg.Close()
+	if err != nil {
+		return
+	}
 }
 
 func compareList(phrase string, comparisionList []string) bool {
@@ -153,6 +161,9 @@ func compareList(phrase string, comparisionList []string) bool {
 
 	return false
 }
+
+var timer *time.Timer
+var mutex *sync.Mutex
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the authenticated bot has access to.
@@ -251,6 +262,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.ChannelID == os.Getenv("PIZZAGATE_ID") {
+		//fmt.Println("HELLO THERE")
 		if reg1.MatchString(m.Content) {
 			taunt, err := strconv.ParseInt(processedString, 10, 32)
 			if err != nil {
@@ -260,18 +272,49 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if err != nil {
 				log.Println(err)
 			}
-			// data, err := os.ReadFile("assets/taunts/" + entries[taunt].Name())
-			// if err != nil {
-			// 	log.Println(err)
-			// }
 
-			dgv, err := dg.ChannelVoiceJoin(*GuildID, os.Getenv("FOW_ID"), false, true)
-			if err != nil {
-				fmt.Println(err)
-				return
+			var tauntFile os.DirEntry
+			for _, file := range entries {
+				if strings.HasPrefix(file.Name(), processedString+"_") {
+					tauntFile = file
+					break
+				}
 			}
-			dgvoice.PlayAudioFile(dgv, "assets/taunts/" + entries[taunt].Name()), make(chan bool))
-			dgv.Close()
+
+			if tauntFile != nil {
+				serverId := os.Getenv("SERVER_ID")
+
+				if dgv, ok := s.VoiceConnections[serverId]; ok {
+					mutex.Lock()
+					fmt.Println("Joined Voice chat to play", tauntFile.Name())
+					timer.Reset(10 * time.Second)
+					dgvoice.PlayAudioFile(dgv, "assets/taunts/"+tauntFile.Name(), make(chan bool))
+					mutex.Unlock()
+					fmt.Println("Spoke")
+				} else {
+					fmt.Println(taunt, "selected, joining", os.Getenv("FOW_ID"))
+					mutex.Lock()
+					dgv, err := s.ChannelVoiceJoin(serverId, os.Getenv("FOW_ID"), false, true)
+					mutex.Unlock()
+					if err != nil {
+						fmt.Println(err)
+						return
+					}
+					fmt.Println("Joined Voice chat to play", tauntFile.Name())
+					dgvoice.PlayAudioFile(dgv, "assets/taunts/"+tauntFile.Name(), make(chan bool))
+					fmt.Println("Spoke")
+
+					timer = time.AfterFunc(10*time.Second, func() {
+						err = dgv.Disconnect()
+						if err != nil {
+							fmt.Println(err)
+							return
+						}
+						dgv.Close()
+					})
+				}
+
+			}
 		}
 	}
 
