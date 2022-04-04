@@ -295,7 +295,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					fmt.Println(taunt, "selected, joining", os.Getenv("FOW_ID"))
 					mutex.Lock()
 					dgv, err := s.ChannelVoiceJoin(serverId, os.Getenv("FOW_ID"), false, true)
-					mutex.Unlock()
+
 					if err != nil {
 						fmt.Println(err)
 						return
@@ -312,6 +312,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 						}
 						dgv.Close()
 					})
+					mutex.Unlock()
 				}
 
 			}
