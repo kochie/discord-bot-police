@@ -1,7 +1,15 @@
 FROM golang:alpine as golang
 WORKDIR /go/src/policebot
 COPY . .
-RUN apk --no-cache add tzdata zip ca-certificates opus-tools ffmpeg build-base git
+RUN apk --no-cache add \
+    tzdata \
+    zip \
+    ca-certificates \
+    opus-tools \
+    ffmpeg \
+    build-base \
+    git \
+    pkgconf
 RUN go build -ldflags="-w -s" -o policebot
 # RUN chmod +x policebot
 
