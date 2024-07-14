@@ -1,4 +1,5 @@
 FROM golang:alpine as golang
+
 WORKDIR /go/src/policebot
 COPY . .
 RUN apk --no-cache add \
@@ -9,7 +10,8 @@ RUN apk --no-cache add \
     ffmpeg \
     build-base \
     git \
-    pkgconf
+    pkgconf \
+    opus-dev
 RUN go build -ldflags="-w -s" -o policebot
 # RUN chmod +x policebot
 
