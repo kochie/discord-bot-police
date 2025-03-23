@@ -1,11 +1,10 @@
-![Deploy to Amazon ECS](https://github.com/kochie/discord-bot-police/workflows/Deploy%20to%20Amazon%20ECS/badge.svg)
-<img align="right" src="http://bwmarrin.github.io/discordgo/img/discordgo.png">
+## DiscordGo Police Bot
 
-## DiscordGo Ping Pong Example
+A discord bot to do random things on the server.
 
-This example demonstrates how to utilize DiscordGo to create a Ping Pong Bot.
-
-This Bot will respond to "ping" with "Pong!" and "pong" with "Ping!".
+- Detects anime and gets angry
+- Detects furries and bans them.
+- Plays AOE2 sounds
 
 **Join [Discord Gophers](https://discord.gg/0f1SbxBZjYoCtNPP)
 Discord chat channel for support.**
