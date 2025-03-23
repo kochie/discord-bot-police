@@ -4,24 +4,24 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"time"
 )
 
-// Provides information about a stream processor created by CreateStreamProcessor.
-// You can get information about the input and output streams, the input parameters
-// for the face recognition being performed, and the current status of the stream
+// Provides information about a stream processor created by CreateStreamProcessor. You can get
+// information about the input and output streams, the input parameters for the
+// face recognition being performed, and the current status of the stream
 // processor.
 func (c *Client) DescribeStreamProcessor(ctx context.Context, params *DescribeStreamProcessorInput, optFns ...func(*Options)) (*DescribeStreamProcessorOutput, error) {
 	if params == nil {
 		params = &DescribeStreamProcessorInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DescribeStreamProcessor", params, optFns, addOperationDescribeStreamProcessorMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DescribeStreamProcessor", params, optFns, c.addOperationDescribeStreamProcessorMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +37,8 @@ type DescribeStreamProcessorInput struct {
 	//
 	// This member is required.
 	Name *string
+
+	noSmithyDocumentSerde
 }
 
 type DescribeStreamProcessorOutput struct {
@@ -44,8 +46,18 @@ type DescribeStreamProcessorOutput struct {
 	// Date and time the stream processor was created
 	CreationTimestamp *time.Time
 
+	//  Shows whether you are sharing data with Rekognition to improve model
+	// performance. You can choose this option at the account level or on a per-stream
+	// basis. Note that if you opt out at the account level this setting is ignored on
+	// individual streams.
+	DataSharingPreference *types.StreamProcessorDataSharingPreference
+
 	// Kinesis video stream that provides the source streaming video.
 	Input *types.StreamProcessorInput
+
+	//  The identifier for your AWS Key Management Service key (AWS KMS key). This is
+	// an optional parameter for label detection stream processors.
+	KmsKeyId *string
 
 	// The time, in Unix format, the stream processor was last updated. For example,
 	// when the stream processor moves from a running state to a failed state, or when
@@ -55,15 +67,33 @@ type DescribeStreamProcessorOutput struct {
 	// Name of the stream processor.
 	Name *string
 
+	// The Amazon Simple Notification Service topic to which Amazon Rekognition
+	// publishes the object detection results and completion status of a video analysis
+	// operation.
+	//
+	// Amazon Rekognition publishes a notification the first time an object of
+	// interest or a person is detected in the video stream. For example, if Amazon
+	// Rekognition detects a person at second 2, a pet at second 4, and a person again
+	// at second 5, Amazon Rekognition sends 2 object class detected notifications, one
+	// for a person at second 2 and one for a pet at second 4.
+	//
+	// Amazon Rekognition also publishes an an end-of-session notification with a
+	// summary when the stream processing session is complete.
+	NotificationChannel *types.StreamProcessorNotificationChannel
+
 	// Kinesis data stream to which Amazon Rekognition Video puts the analysis results.
 	Output *types.StreamProcessorOutput
+
+	//  Specifies locations in the frames where Amazon Rekognition checks for objects
+	// or people. This is an optional parameter for label detection stream processors.
+	RegionsOfInterest []types.RegionOfInterest
 
 	// ARN of the IAM role that allows access to the stream processor.
 	RoleArn *string
 
-	// Face recognition input parameters that are being used by the stream processor.
-	// Includes the collection to use for face recognition and the face attributes to
-	// detect.
+	// Input parameters used in a streaming video analyzed by a stream processor. You
+	// can use FaceSearch to recognize faces in a streaming video, or you can use
+	// ConnectedHome to detect labels.
 	Settings *types.StreamProcessorSettings
 
 	// Current status of the stream processor.
@@ -77,9 +107,14 @@ type DescribeStreamProcessorOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDescribeStreamProcessorMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDescribeStreamProcessorMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDescribeStreamProcessor{}, middleware.After)
 	if err != nil {
 		return err
@@ -88,34 +123,38 @@ func addOperationDescribeStreamProcessorMiddlewares(stack *middleware.Stack, opt
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DescribeStreamProcessor"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -124,10 +163,22 @@ func addOperationDescribeStreamProcessorMiddlewares(stack *middleware.Stack, opt
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeStreamProcessorValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeStreamProcessor(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -139,6 +190,9 @@ func addOperationDescribeStreamProcessorMiddlewares(stack *middleware.Stack, opt
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -146,7 +200,6 @@ func newServiceMetadataMiddleware_opDescribeStreamProcessor(region string) *awsm
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DescribeStreamProcessor",
 	}
 }

@@ -4,8 +4,8 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
@@ -13,22 +13,29 @@ import (
 
 // For a given input face ID, searches for matching faces in the collection the
 // face belongs to. You get a face ID when you add a face to the collection using
-// the IndexFaces operation. The operation compares the features of the input face
-// with faces in the specified collection. You can also search faces without
-// indexing faces by using the SearchFacesByImage operation. The operation response
-// returns an array of faces that match, ordered by similarity score with the
-// highest similarity first. More specifically, it is an array of metadata for each
-// face match that is found. Along with the metadata, the response also includes a
-// confidence value for each face match, indicating the confidence that the
-// specific face matches the input face. For an example, see Searching for a Face
-// Using Its Face ID in the Amazon Rekognition Developer Guide. This operation
-// requires permissions to perform the rekognition:SearchFaces action.
+// the IndexFacesoperation. The operation compares the features of the input face with faces
+// in the specified collection.
+//
+// You can also search faces without indexing faces by using the SearchFacesByImage
+// operation.
+//
+// The operation response returns an array of faces that match, ordered by
+// similarity score with the highest similarity first. More specifically, it is an
+// array of metadata for each face match that is found. Along with the metadata,
+// the response also includes a confidence value for each face match, indicating
+// the confidence that the specific face matches the input face.
+//
+// For an example, see Searching for a face using its face ID in the Amazon
+// Rekognition Developer Guide.
+//
+// This operation requires permissions to perform the rekognition:SearchFaces
+// action.
 func (c *Client) SearchFaces(ctx context.Context, params *SearchFacesInput, optFns ...func(*Options)) (*SearchFacesOutput, error) {
 	if params == nil {
 		params = &SearchFacesInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "SearchFaces", params, optFns, addOperationSearchFacesMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "SearchFaces", params, optFns, c.addOperationSearchFacesMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +65,8 @@ type SearchFacesInput struct {
 	// Maximum number of faces to return. The operation returns the maximum number of
 	// faces with the highest confidence in the match.
 	MaxFaces *int32
+
+	noSmithyDocumentSerde
 }
 
 type SearchFacesOutput struct {
@@ -67,7 +76,7 @@ type SearchFacesOutput struct {
 	FaceMatches []types.FaceMatch
 
 	// Version number of the face detection model associated with the input collection
-	// (CollectionId).
+	// ( CollectionId ).
 	FaceModelVersion *string
 
 	// ID of the face that was searched for matches in a collection.
@@ -75,9 +84,14 @@ type SearchFacesOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationSearchFacesMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationSearchFacesMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpSearchFaces{}, middleware.After)
 	if err != nil {
 		return err
@@ -86,34 +100,38 @@ func addOperationSearchFacesMiddlewares(stack *middleware.Stack, options Options
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "SearchFaces"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -122,10 +140,22 @@ func addOperationSearchFacesMiddlewares(stack *middleware.Stack, options Options
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpSearchFacesValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opSearchFaces(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -137,6 +167,9 @@ func addOperationSearchFacesMiddlewares(stack *middleware.Stack, options Options
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -144,7 +177,6 @@ func newServiceMetadataMiddleware_opSearchFaces(region string) *awsmiddleware.Re
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "SearchFaces",
 	}
 }

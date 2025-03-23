@@ -1,10 +1,8 @@
-FROM golang:alpine as golang
+FROM golang:alpine AS golang
 
 WORKDIR /go/src/policebot
 
-COPY . .
-
-RUN apk --no-cache add \
+RUN apk add \
     tzdata \
     zip \
     ca-certificates \
@@ -14,6 +12,8 @@ RUN apk --no-cache add \
     git \
     pkgconf \
     opus-dev
+
+COPY . .
 
 
 RUN go build -ldflags="-w -s" -o policebot src/main.go

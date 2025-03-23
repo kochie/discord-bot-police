@@ -6,22 +6,25 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Returns list of collection IDs in your account. If the result is truncated, the
-// response also provides a NextToken that you can use in the subsequent request to
-// fetch the next set of collection IDs. For an example, see Listing Collections in
-// the Amazon Rekognition Developer Guide. This operation requires permissions to
-// perform the rekognition:ListCollections action.
+// response also provides a NextToken that you can use in the subsequent request
+// to fetch the next set of collection IDs.
+//
+// For an example, see Listing collections in the Amazon Rekognition Developer
+// Guide.
+//
+// This operation requires permissions to perform the rekognition:ListCollections
+// action.
 func (c *Client) ListCollections(ctx context.Context, params *ListCollectionsInput, optFns ...func(*Options)) (*ListCollectionsOutput, error) {
 	if params == nil {
 		params = &ListCollectionsInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "ListCollections", params, optFns, addOperationListCollectionsMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "ListCollections", params, optFns, c.addOperationListCollectionsMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +41,8 @@ type ListCollectionsInput struct {
 
 	// Pagination token from the previous response.
 	NextToken *string
+
+	noSmithyDocumentSerde
 }
 
 type ListCollectionsOutput struct {
@@ -46,9 +51,9 @@ type ListCollectionsOutput struct {
 	CollectionIds []string
 
 	// Version numbers of the face detection models associated with the collections in
-	// the array CollectionIds. For example, the value of FaceModelVersions[2] is the
+	// the array CollectionIds . For example, the value of FaceModelVersions[2] is the
 	// version number for the face detection model used by the collection in
-	// CollectionId[2].
+	// CollectionId[2] .
 	FaceModelVersions []string
 
 	// If the result is truncated, the response provides a NextToken that you can use
@@ -57,9 +62,14 @@ type ListCollectionsOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationListCollectionsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationListCollectionsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpListCollections{}, middleware.After)
 	if err != nil {
 		return err
@@ -68,34 +78,38 @@ func addOperationListCollectionsMiddlewares(stack *middleware.Stack, options Opt
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "ListCollections"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -104,7 +118,19 @@ func addOperationListCollectionsMiddlewares(stack *middleware.Stack, options Opt
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListCollections(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -116,16 +142,11 @@ func addOperationListCollectionsMiddlewares(stack *middleware.Stack, options Opt
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// ListCollectionsAPIClient is a client that implements the ListCollections
-// operation.
-type ListCollectionsAPIClient interface {
-	ListCollections(context.Context, *ListCollectionsInput, ...func(*Options)) (*ListCollectionsOutput, error)
-}
-
-var _ ListCollectionsAPIClient = (*Client)(nil)
 
 // ListCollectionsPaginatorOptions is the paginator options for ListCollections
 type ListCollectionsPaginatorOptions struct {
@@ -166,12 +187,13 @@ func NewListCollectionsPaginator(client ListCollectionsAPIClient, params *ListCo
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *ListCollectionsPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next ListCollections page.
@@ -189,6 +211,9 @@ func (p *ListCollectionsPaginator) NextPage(ctx context.Context, optFns ...func(
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListCollections(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -198,18 +223,28 @@ func (p *ListCollectionsPaginator) NextPage(ctx context.Context, optFns ...func(
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// ListCollectionsAPIClient is a client that implements the ListCollections
+// operation.
+type ListCollectionsAPIClient interface {
+	ListCollections(context.Context, *ListCollectionsInput, ...func(*Options)) (*ListCollectionsOutput, error)
+}
+
+var _ ListCollectionsAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opListCollections(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "ListCollections",
 	}
 }

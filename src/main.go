@@ -3,44 +3,42 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
+	"github.com/kochie/discord-bot-police/src/commands"
+	"github.com/kochie/discord-bot-police/src/directives"
+	"github.com/redis/go-redis/v9"
 	"log"
 	"os"
 	"os/signal"
 	"regexp"
 	"strings"
-	"sync"
 	"syscall"
-	"time"
-
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/rekognition"
-	"github.com/bwmarrin/discordgo"
 )
 
 var reg *regexp.Regexp
-var reg1 *regexp.Regexp
-
-var rek *rekognition.Client
+var rdb *redis.Client
+var ctx = context.Background()
+var ServerId = os.Getenv("SERVER_ID")
 
 func init() {
+
 	r, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {
 		log.Fatal(err)
 	}
-	r1, err := regexp.Compile(`^\d+$`)
-	if err != nil {
-		log.Fatal(err)
-	}
 	reg = r
-	reg1 = r1
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatal(err)
+	rdb = redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_URL"),
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+}
+
+func addCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if h, ok := commands.CommandHandlers[i.ApplicationCommandData().Name]; ok {
+		h(s, i)
 	}
-
-	rek = rekognition.NewFromConfig(cfg)
-	mutex = &sync.Mutex{}
 }
 
 func main() {
@@ -55,12 +53,23 @@ func main() {
 
 	// Register the messageCreate func as a callback for MessageCreate events.
 	dg.AddHandler(messageCreate)
+	dg.AddHandler(addCommands)
 
 	// Open a websocket connection to Discord and begin listening.
 	err = dg.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		return
+	}
+
+	log.Println("Adding commands...")
+	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands.Commands))
+	for i, v := range commands.Commands {
+		cmd, err := dg.ApplicationCommandCreate(dg.State.User.ID, ServerId, v)
+		if err != nil {
+			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
+		}
+		registeredCommands[i] = cmd
 	}
 
 	// Wait here until CTRL-C or other term signal is received.
@@ -76,28 +85,39 @@ func main() {
 	}
 }
 
-var timer *time.Timer
-var mutex *sync.Mutex
-
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the authenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
 	processedString := reg.ReplaceAllString(strings.ToLower(m.Content), "")
 
-	animeDetection(processedString, s, m)
+	settings, err := rdb.HGetAll(ctx, "settings").Result()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	simpDetaction(processedString, s, m)
-
-	commieDetection(processedString, s, m)
-
-	aoeTaunts(processedString, s, m)
-
-	celebDetection(s, m)
+	if enabled, ok := settings["DETECT_ANIME"]; ok && enabled == "true" {
+		directives.AnimeDetection(processedString, s, m)
+	}
+	if enabled, ok := settings["DETECT_SIMP"]; ok && enabled == "true" {
+		directives.SimpDetection(processedString, s, m)
+	}
+	if enabled, ok := settings["DETECT_COMMIE"]; ok && enabled == "true" {
+		directives.CommieDetection(processedString, s, m)
+	}
+	if enabled, ok := settings["DETECT_FURRY"]; ok && enabled == "true" {
+		directives.FurryDetection(processedString, s, m)
+	}
+	if enabled, ok := settings["AOE_TAUNTS"]; ok && enabled == "true" {
+		directives.AoeTaunts(processedString, s, m)
+	}
+	if enabled, ok := settings["DETECT_CELEB"]; ok && enabled == "true" {
+		directives.CelebDetection(s, m)
+	}
 }

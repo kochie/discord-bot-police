@@ -4,25 +4,29 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes an Amazon Rekognition Custom Labels model. You can't delete a model if
-// it is running or if it is training. To check the status of a model, use the
-// Status field returned from DescribeProjectVersions. To stop a running model call
-// StopProjectVersion. If the model is training, wait until it finishes. This
-// operation requires permissions to perform the rekognition:DeleteProjectVersion
-// action.
+// Deletes a Rekognition project model or project version, like a Amazon
+// Rekognition Custom Labels model or a custom adapter.
+//
+// You can't delete a project version if it is running or if it is training. To
+// check the status of a project version, use the Status field returned from DescribeProjectVersions. To
+// stop a project version call StopProjectVersion. If the project version is training, wait until it
+// finishes.
+//
+// This operation requires permissions to perform the
+// rekognition:DeleteProjectVersion action.
 func (c *Client) DeleteProjectVersion(ctx context.Context, params *DeleteProjectVersionInput, optFns ...func(*Options)) (*DeleteProjectVersionOutput, error) {
 	if params == nil {
 		params = &DeleteProjectVersionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DeleteProjectVersion", params, optFns, addOperationDeleteProjectVersionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DeleteProjectVersion", params, optFns, c.addOperationDeleteProjectVersionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +38,12 @@ func (c *Client) DeleteProjectVersion(ctx context.Context, params *DeleteProject
 
 type DeleteProjectVersionInput struct {
 
-	// The Amazon Resource Name (ARN) of the model version that you want to delete.
+	// The Amazon Resource Name (ARN) of the project version that you want to delete.
 	//
 	// This member is required.
 	ProjectVersionArn *string
+
+	noSmithyDocumentSerde
 }
 
 type DeleteProjectVersionOutput struct {
@@ -47,9 +53,14 @@ type DeleteProjectVersionOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDeleteProjectVersionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDeleteProjectVersionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDeleteProjectVersion{}, middleware.After)
 	if err != nil {
 		return err
@@ -58,34 +69,38 @@ func addOperationDeleteProjectVersionMiddlewares(stack *middleware.Stack, option
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DeleteProjectVersion"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -94,10 +109,22 @@ func addOperationDeleteProjectVersionMiddlewares(stack *middleware.Stack, option
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteProjectVersionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteProjectVersion(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -109,6 +136,9 @@ func addOperationDeleteProjectVersionMiddlewares(stack *middleware.Stack, option
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -116,7 +146,6 @@ func newServiceMetadataMiddleware_opDeleteProjectVersion(region string) *awsmidd
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DeleteProjectVersion",
 	}
 }

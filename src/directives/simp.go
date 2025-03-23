@@ -1,16 +1,24 @@
-package main
+package directives
 
 import (
+	"github.com/bwmarrin/discordgo"
 	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 )
 
-func simpDetaction(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) bool {
+var simps = []string{
+	"assets/simp1.gif",
+	"assets/simp2.gif",
+	"assets/simp1.jpg",
+	"assets/simp2.jpg",
+	"assets/simp3.jpg",
+	"assets/simp4.jpg",
+}
+
+func SimpDetection(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) bool {
 	if m.Author.ID == os.Getenv("SIMP_ID") {
 		if strings.Contains(processedString, "caitlin") {
 			filename := simps[rand.Intn(len(simps))]
@@ -23,7 +31,7 @@ func simpDetaction(processedString string, s *discordgo.Session, m *discordgo.Me
 			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 				Files: []*discordgo.File{{
 					Name:        filepath.Base(filename),
-					ContentType: getContentType(filename),
+					ContentType: main.getContentType(filename),
 					Reader:      file,
 				}},
 			})

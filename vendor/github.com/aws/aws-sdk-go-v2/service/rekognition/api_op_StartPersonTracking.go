@@ -4,29 +4,31 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Starts the asynchronous tracking of a person's path in a stored video. Amazon
-// Rekognition Video can track the path of people in a video stored in an Amazon S3
-// bucket. Use Video to specify the bucket name and the filename of the video.
-// StartPersonTracking returns a job identifier (JobId) which you use to get the
+// Starts the asynchronous tracking of a person's path in a stored video.
+//
+// Amazon Rekognition Video can track the path of people in a video stored in an
+// Amazon S3 bucket. Use Videoto specify the bucket name and the filename of the video.
+// StartPersonTracking returns a job identifier ( JobId ) which you use to get the
 // results of the operation. When label detection is finished, Amazon Rekognition
 // publishes a completion status to the Amazon Simple Notification Service topic
-// that you specify in NotificationChannel. To get the results of the person
-// detection operation, first check that the status value published to the Amazon
-// SNS topic is SUCCEEDED. If so, call GetPersonTracking and pass the job
-// identifier (JobId) from the initial call to StartPersonTracking.
+// that you specify in NotificationChannel .
+//
+// To get the results of the person detection operation, first check that the
+// status value published to the Amazon SNS topic is SUCCEEDED . If so, call GetPersonTracking and
+// pass the job identifier ( JobId ) from the initial call to StartPersonTracking .
 func (c *Client) StartPersonTracking(ctx context.Context, params *StartPersonTrackingInput, optFns ...func(*Options)) (*StartPersonTrackingOutput, error) {
 	if params == nil {
 		params = &StartPersonTrackingInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StartPersonTracking", params, optFns, addOperationStartPersonTrackingMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StartPersonTracking", params, optFns, c.addOperationStartPersonTrackingMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -57,21 +59,30 @@ type StartPersonTrackingInput struct {
 	JobTag *string
 
 	// The Amazon SNS topic ARN you want Amazon Rekognition Video to publish the
-	// completion status of the people detection operation to.
+	// completion status of the people detection operation to. The Amazon SNS topic
+	// must have a topic name that begins with AmazonRekognition if you are using the
+	// AmazonRekognitionServiceRole permissions policy.
 	NotificationChannel *types.NotificationChannel
+
+	noSmithyDocumentSerde
 }
 
 type StartPersonTrackingOutput struct {
 
 	// The identifier for the person detection job. Use JobId to identify the job in a
-	// subsequent call to GetPersonTracking.
+	// subsequent call to GetPersonTracking .
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStartPersonTrackingMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStartPersonTrackingMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStartPersonTracking{}, middleware.After)
 	if err != nil {
 		return err
@@ -80,34 +91,38 @@ func addOperationStartPersonTrackingMiddlewares(stack *middleware.Stack, options
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StartPersonTracking"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -116,10 +131,22 @@ func addOperationStartPersonTrackingMiddlewares(stack *middleware.Stack, options
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStartPersonTrackingValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStartPersonTracking(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -131,6 +158,9 @@ func addOperationStartPersonTrackingMiddlewares(stack *middleware.Stack, options
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -138,7 +168,6 @@ func newServiceMetadataMiddleware_opStartPersonTracking(region string) *awsmiddl
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StartPersonTracking",
 	}
 }

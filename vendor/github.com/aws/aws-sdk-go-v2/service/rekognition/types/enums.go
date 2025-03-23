@@ -6,17 +6,42 @@ type Attribute string
 
 // Enum values for Attribute
 const (
-	AttributeDefault Attribute = "DEFAULT"
-	AttributeAll     Attribute = "ALL"
+	AttributeDefault      Attribute = "DEFAULT"
+	AttributeAll          Attribute = "ALL"
+	AttributeAgeRange     Attribute = "AGE_RANGE"
+	AttributeBeard        Attribute = "BEARD"
+	AttributeEmotions     Attribute = "EMOTIONS"
+	AttributeEyeDirection Attribute = "EYE_DIRECTION"
+	AttributeEyeglasses   Attribute = "EYEGLASSES"
+	AttributeEyesOpen     Attribute = "EYES_OPEN"
+	AttributeGender       Attribute = "GENDER"
+	AttributeMouthOpen    Attribute = "MOUTH_OPEN"
+	AttributeMustache     Attribute = "MUSTACHE"
+	AttributeFaceOccluded Attribute = "FACE_OCCLUDED"
+	AttributeSmile        Attribute = "SMILE"
+	AttributeSunglasses   Attribute = "SUNGLASSES"
 )
 
-// Values returns all known values for Attribute. Note that this can be expanded in
-// the future, and so it is only as up to date as the client. The ordering of this
-// slice is not guaranteed to be stable across updates.
+// Values returns all known values for Attribute. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (Attribute) Values() []Attribute {
 	return []Attribute{
 		"DEFAULT",
 		"ALL",
+		"AGE_RANGE",
+		"BEARD",
+		"EMOTIONS",
+		"EYE_DIRECTION",
+		"EYEGLASSES",
+		"EYES_OPEN",
+		"GENDER",
+		"MOUTH_OPEN",
+		"MUSTACHE",
+		"FACE_OCCLUDED",
+		"SMILE",
+		"SUNGLASSES",
 	}
 }
 
@@ -31,8 +56,9 @@ const (
 )
 
 // Values returns all known values for BodyPart. Note that this can be expanded in
-// the future, and so it is only as up to date as the client. The ordering of this
-// slice is not guaranteed to be stable across updates.
+// the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (BodyPart) Values() []BodyPart {
 	return []BodyPart{
 		"FACE",
@@ -52,6 +78,7 @@ const (
 
 // Values returns all known values for CelebrityRecognitionSortBy. Note that this
 // can be expanded in the future, and so it is only as up to date as the client.
+//
 // The ordering of this slice is not guaranteed to be stable across updates.
 func (CelebrityRecognitionSortBy) Values() []CelebrityRecognitionSortBy {
 	return []CelebrityRecognitionSortBy{
@@ -69,12 +96,33 @@ const (
 )
 
 // Values returns all known values for ContentClassifier. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ContentClassifier) Values() []ContentClassifier {
 	return []ContentClassifier{
 		"FreeOfPersonallyIdentifiableInformation",
 		"FreeOfAdultContent",
+	}
+}
+
+type ContentModerationAggregateBy string
+
+// Enum values for ContentModerationAggregateBy
+const (
+	ContentModerationAggregateByTimestamps ContentModerationAggregateBy = "TIMESTAMPS"
+	ContentModerationAggregateBySegments   ContentModerationAggregateBy = "SEGMENTS"
+)
+
+// Values returns all known values for ContentModerationAggregateBy. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ContentModerationAggregateBy) Values() []ContentModerationAggregateBy {
+	return []ContentModerationAggregateBy{
+		"TIMESTAMPS",
+		"SEGMENTS",
 	}
 }
 
@@ -87,12 +135,120 @@ const (
 )
 
 // Values returns all known values for ContentModerationSortBy. Note that this can
-// be expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ContentModerationSortBy) Values() []ContentModerationSortBy {
 	return []ContentModerationSortBy{
 		"NAME",
 		"TIMESTAMP",
+	}
+}
+
+type CustomizationFeature string
+
+// Enum values for CustomizationFeature
+const (
+	CustomizationFeatureContentModeration CustomizationFeature = "CONTENT_MODERATION"
+	CustomizationFeatureCustomLabels      CustomizationFeature = "CUSTOM_LABELS"
+)
+
+// Values returns all known values for CustomizationFeature. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (CustomizationFeature) Values() []CustomizationFeature {
+	return []CustomizationFeature{
+		"CONTENT_MODERATION",
+		"CUSTOM_LABELS",
+	}
+}
+
+type DatasetStatus string
+
+// Enum values for DatasetStatus
+const (
+	DatasetStatusCreateInProgress DatasetStatus = "CREATE_IN_PROGRESS"
+	DatasetStatusCreateComplete   DatasetStatus = "CREATE_COMPLETE"
+	DatasetStatusCreateFailed     DatasetStatus = "CREATE_FAILED"
+	DatasetStatusUpdateInProgress DatasetStatus = "UPDATE_IN_PROGRESS"
+	DatasetStatusUpdateComplete   DatasetStatus = "UPDATE_COMPLETE"
+	DatasetStatusUpdateFailed     DatasetStatus = "UPDATE_FAILED"
+	DatasetStatusDeleteInProgress DatasetStatus = "DELETE_IN_PROGRESS"
+)
+
+// Values returns all known values for DatasetStatus. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (DatasetStatus) Values() []DatasetStatus {
+	return []DatasetStatus{
+		"CREATE_IN_PROGRESS",
+		"CREATE_COMPLETE",
+		"CREATE_FAILED",
+		"UPDATE_IN_PROGRESS",
+		"UPDATE_COMPLETE",
+		"UPDATE_FAILED",
+		"DELETE_IN_PROGRESS",
+	}
+}
+
+type DatasetStatusMessageCode string
+
+// Enum values for DatasetStatusMessageCode
+const (
+	DatasetStatusMessageCodeSuccess      DatasetStatusMessageCode = "SUCCESS"
+	DatasetStatusMessageCodeServiceError DatasetStatusMessageCode = "SERVICE_ERROR"
+	DatasetStatusMessageCodeClientError  DatasetStatusMessageCode = "CLIENT_ERROR"
+)
+
+// Values returns all known values for DatasetStatusMessageCode. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (DatasetStatusMessageCode) Values() []DatasetStatusMessageCode {
+	return []DatasetStatusMessageCode{
+		"SUCCESS",
+		"SERVICE_ERROR",
+		"CLIENT_ERROR",
+	}
+}
+
+type DatasetType string
+
+// Enum values for DatasetType
+const (
+	DatasetTypeTrain DatasetType = "TRAIN"
+	DatasetTypeTest  DatasetType = "TEST"
+)
+
+// Values returns all known values for DatasetType. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (DatasetType) Values() []DatasetType {
+	return []DatasetType{
+		"TRAIN",
+		"TEST",
+	}
+}
+
+type DetectLabelsFeatureName string
+
+// Enum values for DetectLabelsFeatureName
+const (
+	DetectLabelsFeatureNameGeneralLabels   DetectLabelsFeatureName = "GENERAL_LABELS"
+	DetectLabelsFeatureNameImageProperties DetectLabelsFeatureName = "IMAGE_PROPERTIES"
+)
+
+// Values returns all known values for DetectLabelsFeatureName. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (DetectLabelsFeatureName) Values() []DetectLabelsFeatureName {
+	return []DetectLabelsFeatureName{
+		"GENERAL_LABELS",
+		"IMAGE_PROPERTIES",
 	}
 }
 
@@ -112,8 +268,9 @@ const (
 )
 
 // Values returns all known values for EmotionName. Note that this can be expanded
-// in the future, and so it is only as up to date as the client. The ordering of
-// this slice is not guaranteed to be stable across updates.
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (EmotionName) Values() []EmotionName {
 	return []EmotionName{
 		"HAPPY",
@@ -137,8 +294,9 @@ const (
 )
 
 // Values returns all known values for FaceAttributes. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (FaceAttributes) Values() []FaceAttributes {
 	return []FaceAttributes{
 		"DEFAULT",
@@ -155,8 +313,9 @@ const (
 )
 
 // Values returns all known values for FaceSearchSortBy. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (FaceSearchSortBy) Values() []FaceSearchSortBy {
 	return []FaceSearchSortBy{
 		"INDEX",
@@ -173,12 +332,72 @@ const (
 )
 
 // Values returns all known values for GenderType. Note that this can be expanded
-// in the future, and so it is only as up to date as the client. The ordering of
-// this slice is not guaranteed to be stable across updates.
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (GenderType) Values() []GenderType {
 	return []GenderType{
 		"Male",
 		"Female",
+	}
+}
+
+type KnownGenderType string
+
+// Enum values for KnownGenderType
+const (
+	KnownGenderTypeMale      KnownGenderType = "Male"
+	KnownGenderTypeFemale    KnownGenderType = "Female"
+	KnownGenderTypeNonbinary KnownGenderType = "Nonbinary"
+	KnownGenderTypeUnlisted  KnownGenderType = "Unlisted"
+)
+
+// Values returns all known values for KnownGenderType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (KnownGenderType) Values() []KnownGenderType {
+	return []KnownGenderType{
+		"Male",
+		"Female",
+		"Nonbinary",
+		"Unlisted",
+	}
+}
+
+type LabelDetectionAggregateBy string
+
+// Enum values for LabelDetectionAggregateBy
+const (
+	LabelDetectionAggregateByTimestamps LabelDetectionAggregateBy = "TIMESTAMPS"
+	LabelDetectionAggregateBySegments   LabelDetectionAggregateBy = "SEGMENTS"
+)
+
+// Values returns all known values for LabelDetectionAggregateBy. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (LabelDetectionAggregateBy) Values() []LabelDetectionAggregateBy {
+	return []LabelDetectionAggregateBy{
+		"TIMESTAMPS",
+		"SEGMENTS",
+	}
+}
+
+type LabelDetectionFeatureName string
+
+// Enum values for LabelDetectionFeatureName
+const (
+	LabelDetectionFeatureNameGeneralLabels LabelDetectionFeatureName = "GENERAL_LABELS"
+)
+
+// Values returns all known values for LabelDetectionFeatureName. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (LabelDetectionFeatureName) Values() []LabelDetectionFeatureName {
+	return []LabelDetectionFeatureName{
+		"GENERAL_LABELS",
 	}
 }
 
@@ -191,8 +410,9 @@ const (
 )
 
 // Values returns all known values for LabelDetectionSortBy. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (LabelDetectionSortBy) Values() []LabelDetectionSortBy {
 	return []LabelDetectionSortBy{
 		"NAME",
@@ -236,9 +456,10 @@ const (
 	LandmarkTypeUpperJawlineRight LandmarkType = "upperJawlineRight"
 )
 
-// Values returns all known values for LandmarkType. Note that this can be expanded
-// in the future, and so it is only as up to date as the client. The ordering of
-// this slice is not guaranteed to be stable across updates.
+// Values returns all known values for LandmarkType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (LandmarkType) Values() []LandmarkType {
 	return []LandmarkType{
 		"eyeLeft",
@@ -274,6 +495,89 @@ func (LandmarkType) Values() []LandmarkType {
 	}
 }
 
+type LivenessSessionStatus string
+
+// Enum values for LivenessSessionStatus
+const (
+	LivenessSessionStatusCreated    LivenessSessionStatus = "CREATED"
+	LivenessSessionStatusInProgress LivenessSessionStatus = "IN_PROGRESS"
+	LivenessSessionStatusSucceeded  LivenessSessionStatus = "SUCCEEDED"
+	LivenessSessionStatusFailed     LivenessSessionStatus = "FAILED"
+	LivenessSessionStatusExpired    LivenessSessionStatus = "EXPIRED"
+)
+
+// Values returns all known values for LivenessSessionStatus. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (LivenessSessionStatus) Values() []LivenessSessionStatus {
+	return []LivenessSessionStatus{
+		"CREATED",
+		"IN_PROGRESS",
+		"SUCCEEDED",
+		"FAILED",
+		"EXPIRED",
+	}
+}
+
+type MediaAnalysisJobFailureCode string
+
+// Enum values for MediaAnalysisJobFailureCode
+const (
+	MediaAnalysisJobFailureCodeInternalError       MediaAnalysisJobFailureCode = "INTERNAL_ERROR"
+	MediaAnalysisJobFailureCodeInvalidS3Object     MediaAnalysisJobFailureCode = "INVALID_S3_OBJECT"
+	MediaAnalysisJobFailureCodeInvalidManifest     MediaAnalysisJobFailureCode = "INVALID_MANIFEST"
+	MediaAnalysisJobFailureCodeInvalidOutputConfig MediaAnalysisJobFailureCode = "INVALID_OUTPUT_CONFIG"
+	MediaAnalysisJobFailureCodeInvalidKmsKey       MediaAnalysisJobFailureCode = "INVALID_KMS_KEY"
+	MediaAnalysisJobFailureCodeAccessDenied        MediaAnalysisJobFailureCode = "ACCESS_DENIED"
+	MediaAnalysisJobFailureCodeResourceNotFound    MediaAnalysisJobFailureCode = "RESOURCE_NOT_FOUND"
+	MediaAnalysisJobFailureCodeResourceNotReady    MediaAnalysisJobFailureCode = "RESOURCE_NOT_READY"
+	MediaAnalysisJobFailureCodeThrottled           MediaAnalysisJobFailureCode = "THROTTLED"
+)
+
+// Values returns all known values for MediaAnalysisJobFailureCode. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (MediaAnalysisJobFailureCode) Values() []MediaAnalysisJobFailureCode {
+	return []MediaAnalysisJobFailureCode{
+		"INTERNAL_ERROR",
+		"INVALID_S3_OBJECT",
+		"INVALID_MANIFEST",
+		"INVALID_OUTPUT_CONFIG",
+		"INVALID_KMS_KEY",
+		"ACCESS_DENIED",
+		"RESOURCE_NOT_FOUND",
+		"RESOURCE_NOT_READY",
+		"THROTTLED",
+	}
+}
+
+type MediaAnalysisJobStatus string
+
+// Enum values for MediaAnalysisJobStatus
+const (
+	MediaAnalysisJobStatusCreated    MediaAnalysisJobStatus = "CREATED"
+	MediaAnalysisJobStatusQueued     MediaAnalysisJobStatus = "QUEUED"
+	MediaAnalysisJobStatusInProgress MediaAnalysisJobStatus = "IN_PROGRESS"
+	MediaAnalysisJobStatusSucceeded  MediaAnalysisJobStatus = "SUCCEEDED"
+	MediaAnalysisJobStatusFailed     MediaAnalysisJobStatus = "FAILED"
+)
+
+// Values returns all known values for MediaAnalysisJobStatus. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (MediaAnalysisJobStatus) Values() []MediaAnalysisJobStatus {
+	return []MediaAnalysisJobStatus{
+		"CREATED",
+		"QUEUED",
+		"IN_PROGRESS",
+		"SUCCEEDED",
+		"FAILED",
+	}
+}
+
 type OrientationCorrection string
 
 // Enum values for OrientationCorrection
@@ -284,9 +588,10 @@ const (
 	OrientationCorrectionRotate270 OrientationCorrection = "ROTATE_270"
 )
 
-// Values returns all known values for OrientationCorrection. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// Values returns all known values for OrientationCorrection. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (OrientationCorrection) Values() []OrientationCorrection {
 	return []OrientationCorrection{
 		"ROTATE_0",
@@ -305,12 +610,32 @@ const (
 )
 
 // Values returns all known values for PersonTrackingSortBy. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (PersonTrackingSortBy) Values() []PersonTrackingSortBy {
 	return []PersonTrackingSortBy{
 		"INDEX",
 		"TIMESTAMP",
+	}
+}
+
+type ProjectAutoUpdate string
+
+// Enum values for ProjectAutoUpdate
+const (
+	ProjectAutoUpdateEnabled  ProjectAutoUpdate = "ENABLED"
+	ProjectAutoUpdateDisabled ProjectAutoUpdate = "DISABLED"
+)
+
+// Values returns all known values for ProjectAutoUpdate. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ProjectAutoUpdate) Values() []ProjectAutoUpdate {
+	return []ProjectAutoUpdate{
+		"ENABLED",
+		"DISABLED",
 	}
 }
 
@@ -324,8 +649,9 @@ const (
 )
 
 // Values returns all known values for ProjectStatus. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ProjectStatus) Values() []ProjectStatus {
 	return []ProjectStatus{
 		"CREATING",
@@ -347,11 +673,17 @@ const (
 	ProjectVersionStatusStopping           ProjectVersionStatus = "STOPPING"
 	ProjectVersionStatusStopped            ProjectVersionStatus = "STOPPED"
 	ProjectVersionStatusDeleting           ProjectVersionStatus = "DELETING"
+	ProjectVersionStatusCopyingInProgress  ProjectVersionStatus = "COPYING_IN_PROGRESS"
+	ProjectVersionStatusCopyingCompleted   ProjectVersionStatus = "COPYING_COMPLETED"
+	ProjectVersionStatusCopyingFailed      ProjectVersionStatus = "COPYING_FAILED"
+	ProjectVersionStatusDeprecated         ProjectVersionStatus = "DEPRECATED"
+	ProjectVersionStatusExpired            ProjectVersionStatus = "EXPIRED"
 )
 
 // Values returns all known values for ProjectVersionStatus. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ProjectVersionStatus) Values() []ProjectVersionStatus {
 	return []ProjectVersionStatus{
 		"TRAINING_IN_PROGRESS",
@@ -363,6 +695,11 @@ func (ProjectVersionStatus) Values() []ProjectVersionStatus {
 		"STOPPING",
 		"STOPPED",
 		"DELETING",
+		"COPYING_IN_PROGRESS",
+		"COPYING_COMPLETED",
+		"COPYING_FAILED",
+		"DEPRECATED",
+		"EXPIRED",
 	}
 }
 
@@ -376,8 +713,9 @@ const (
 )
 
 // Values returns all known values for ProtectiveEquipmentType. Note that this can
-// be expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (ProtectiveEquipmentType) Values() []ProtectiveEquipmentType {
 	return []ProtectiveEquipmentType{
 		"FACE_COVER",
@@ -398,8 +736,9 @@ const (
 )
 
 // Values returns all known values for QualityFilter. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (QualityFilter) Values() []QualityFilter {
 	return []QualityFilter{
 		"NONE",
@@ -424,8 +763,9 @@ const (
 )
 
 // Values returns all known values for Reason. Note that this can be expanded in
-// the future, and so it is only as up to date as the client. The ordering of this
-// slice is not guaranteed to be stable across updates.
+// the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (Reason) Values() []Reason {
 	return []Reason{
 		"EXCEEDS_MAX_FACES",
@@ -447,12 +787,33 @@ const (
 )
 
 // Values returns all known values for SegmentType. Note that this can be expanded
-// in the future, and so it is only as up to date as the client. The ordering of
-// this slice is not guaranteed to be stable across updates.
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (SegmentType) Values() []SegmentType {
 	return []SegmentType{
 		"TECHNICAL_CUE",
 		"SHOT",
+	}
+}
+
+type StreamProcessorParameterToDelete string
+
+// Enum values for StreamProcessorParameterToDelete
+const (
+	StreamProcessorParameterToDeleteConnectedHomeMinConfidence StreamProcessorParameterToDelete = "ConnectedHomeMinConfidence"
+	StreamProcessorParameterToDeleteRegionsOfInterest          StreamProcessorParameterToDelete = "RegionsOfInterest"
+)
+
+// Values returns all known values for StreamProcessorParameterToDelete. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (StreamProcessorParameterToDelete) Values() []StreamProcessorParameterToDelete {
+	return []StreamProcessorParameterToDelete{
+		"ConnectedHomeMinConfidence",
+		"RegionsOfInterest",
 	}
 }
 
@@ -465,11 +826,13 @@ const (
 	StreamProcessorStatusRunning  StreamProcessorStatus = "RUNNING"
 	StreamProcessorStatusFailed   StreamProcessorStatus = "FAILED"
 	StreamProcessorStatusStopping StreamProcessorStatus = "STOPPING"
+	StreamProcessorStatusUpdating StreamProcessorStatus = "UPDATING"
 )
 
-// Values returns all known values for StreamProcessorStatus. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// Values returns all known values for StreamProcessorStatus. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (StreamProcessorStatus) Values() []StreamProcessorStatus {
 	return []StreamProcessorStatus{
 		"STOPPED",
@@ -477,6 +840,7 @@ func (StreamProcessorStatus) Values() []StreamProcessorStatus {
 		"RUNNING",
 		"FAILED",
 		"STOPPING",
+		"UPDATING",
 	}
 }
 
@@ -484,19 +848,28 @@ type TechnicalCueType string
 
 // Enum values for TechnicalCueType
 const (
-	TechnicalCueTypeColorBars   TechnicalCueType = "ColorBars"
-	TechnicalCueTypeEndCredits  TechnicalCueType = "EndCredits"
-	TechnicalCueTypeBlackFrames TechnicalCueType = "BlackFrames"
+	TechnicalCueTypeColorBars      TechnicalCueType = "ColorBars"
+	TechnicalCueTypeEndCredits     TechnicalCueType = "EndCredits"
+	TechnicalCueTypeBlackFrames    TechnicalCueType = "BlackFrames"
+	TechnicalCueTypeOpeningCredits TechnicalCueType = "OpeningCredits"
+	TechnicalCueTypeStudioLogo     TechnicalCueType = "StudioLogo"
+	TechnicalCueTypeSlate          TechnicalCueType = "Slate"
+	TechnicalCueTypeContent        TechnicalCueType = "Content"
 )
 
 // Values returns all known values for TechnicalCueType. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (TechnicalCueType) Values() []TechnicalCueType {
 	return []TechnicalCueType{
 		"ColorBars",
 		"EndCredits",
 		"BlackFrames",
+		"OpeningCredits",
+		"StudioLogo",
+		"Slate",
+		"Content",
 	}
 }
 
@@ -508,13 +881,149 @@ const (
 	TextTypesWord TextTypes = "WORD"
 )
 
-// Values returns all known values for TextTypes. Note that this can be expanded in
-// the future, and so it is only as up to date as the client. The ordering of this
-// slice is not guaranteed to be stable across updates.
+// Values returns all known values for TextTypes. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (TextTypes) Values() []TextTypes {
 	return []TextTypes{
 		"LINE",
 		"WORD",
+	}
+}
+
+type UnsearchedFaceReason string
+
+// Enum values for UnsearchedFaceReason
+const (
+	UnsearchedFaceReasonFaceNotLargest   UnsearchedFaceReason = "FACE_NOT_LARGEST"
+	UnsearchedFaceReasonExceedsMaxFaces  UnsearchedFaceReason = "EXCEEDS_MAX_FACES"
+	UnsearchedFaceReasonExtremePose      UnsearchedFaceReason = "EXTREME_POSE"
+	UnsearchedFaceReasonLowBrightness    UnsearchedFaceReason = "LOW_BRIGHTNESS"
+	UnsearchedFaceReasonLowSharpness     UnsearchedFaceReason = "LOW_SHARPNESS"
+	UnsearchedFaceReasonLowConfidence    UnsearchedFaceReason = "LOW_CONFIDENCE"
+	UnsearchedFaceReasonSmallBoundingBox UnsearchedFaceReason = "SMALL_BOUNDING_BOX"
+	UnsearchedFaceReasonLowFaceQuality   UnsearchedFaceReason = "LOW_FACE_QUALITY"
+)
+
+// Values returns all known values for UnsearchedFaceReason. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (UnsearchedFaceReason) Values() []UnsearchedFaceReason {
+	return []UnsearchedFaceReason{
+		"FACE_NOT_LARGEST",
+		"EXCEEDS_MAX_FACES",
+		"EXTREME_POSE",
+		"LOW_BRIGHTNESS",
+		"LOW_SHARPNESS",
+		"LOW_CONFIDENCE",
+		"SMALL_BOUNDING_BOX",
+		"LOW_FACE_QUALITY",
+	}
+}
+
+type UnsuccessfulFaceAssociationReason string
+
+// Enum values for UnsuccessfulFaceAssociationReason
+const (
+	UnsuccessfulFaceAssociationReasonFaceNotFound               UnsuccessfulFaceAssociationReason = "FACE_NOT_FOUND"
+	UnsuccessfulFaceAssociationReasonAssociatedToADifferentUser UnsuccessfulFaceAssociationReason = "ASSOCIATED_TO_A_DIFFERENT_USER"
+	UnsuccessfulFaceAssociationReasonLowMatchConfidence         UnsuccessfulFaceAssociationReason = "LOW_MATCH_CONFIDENCE"
+)
+
+// Values returns all known values for UnsuccessfulFaceAssociationReason. Note
+// that this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (UnsuccessfulFaceAssociationReason) Values() []UnsuccessfulFaceAssociationReason {
+	return []UnsuccessfulFaceAssociationReason{
+		"FACE_NOT_FOUND",
+		"ASSOCIATED_TO_A_DIFFERENT_USER",
+		"LOW_MATCH_CONFIDENCE",
+	}
+}
+
+type UnsuccessfulFaceDeletionReason string
+
+// Enum values for UnsuccessfulFaceDeletionReason
+const (
+	UnsuccessfulFaceDeletionReasonAssociatedToAnExistingUser UnsuccessfulFaceDeletionReason = "ASSOCIATED_TO_AN_EXISTING_USER"
+	UnsuccessfulFaceDeletionReasonFaceNotFound               UnsuccessfulFaceDeletionReason = "FACE_NOT_FOUND"
+)
+
+// Values returns all known values for UnsuccessfulFaceDeletionReason. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (UnsuccessfulFaceDeletionReason) Values() []UnsuccessfulFaceDeletionReason {
+	return []UnsuccessfulFaceDeletionReason{
+		"ASSOCIATED_TO_AN_EXISTING_USER",
+		"FACE_NOT_FOUND",
+	}
+}
+
+type UnsuccessfulFaceDisassociationReason string
+
+// Enum values for UnsuccessfulFaceDisassociationReason
+const (
+	UnsuccessfulFaceDisassociationReasonFaceNotFound               UnsuccessfulFaceDisassociationReason = "FACE_NOT_FOUND"
+	UnsuccessfulFaceDisassociationReasonAssociatedToADifferentUser UnsuccessfulFaceDisassociationReason = "ASSOCIATED_TO_A_DIFFERENT_USER"
+)
+
+// Values returns all known values for UnsuccessfulFaceDisassociationReason. Note
+// that this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (UnsuccessfulFaceDisassociationReason) Values() []UnsuccessfulFaceDisassociationReason {
+	return []UnsuccessfulFaceDisassociationReason{
+		"FACE_NOT_FOUND",
+		"ASSOCIATED_TO_A_DIFFERENT_USER",
+	}
+}
+
+type UserStatus string
+
+// Enum values for UserStatus
+const (
+	UserStatusActive   UserStatus = "ACTIVE"
+	UserStatusUpdating UserStatus = "UPDATING"
+	UserStatusCreating UserStatus = "CREATING"
+	UserStatusCreated  UserStatus = "CREATED"
+)
+
+// Values returns all known values for UserStatus. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (UserStatus) Values() []UserStatus {
+	return []UserStatus{
+		"ACTIVE",
+		"UPDATING",
+		"CREATING",
+		"CREATED",
+	}
+}
+
+type VideoColorRange string
+
+// Enum values for VideoColorRange
+const (
+	VideoColorRangeFull    VideoColorRange = "FULL"
+	VideoColorRangeLimited VideoColorRange = "LIMITED"
+)
+
+// Values returns all known values for VideoColorRange. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (VideoColorRange) Values() []VideoColorRange {
+	return []VideoColorRange{
+		"FULL",
+		"LIMITED",
 	}
 }
 
@@ -528,8 +1037,9 @@ const (
 )
 
 // Values returns all known values for VideoJobStatus. Note that this can be
-// expanded in the future, and so it is only as up to date as the client. The
-// ordering of this slice is not guaranteed to be stable across updates.
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
 func (VideoJobStatus) Values() []VideoJobStatus {
 	return []VideoJobStatus{
 		"IN_PROGRESS",

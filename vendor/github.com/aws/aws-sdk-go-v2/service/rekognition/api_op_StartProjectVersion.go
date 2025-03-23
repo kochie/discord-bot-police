@@ -4,25 +4,32 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
+// This operation applies only to Amazon Rekognition Custom Labels.
+//
 // Starts the running of the version of a model. Starting a model takes a while to
 // complete. To check the current state of the model, use DescribeProjectVersions.
-// Once the model is running, you can detect custom labels in new images by calling
-// DetectCustomLabels. You are charged for the amount of time that the model is
-// running. To stop a running model, call StopProjectVersion. This operation
-// requires permissions to perform the rekognition:StartProjectVersion action.
+//
+// Once the model is running, you can detect custom labels in new images by
+// calling DetectCustomLabels.
+//
+// You are charged for the amount of time that the model is running. To stop a
+// running model, call StopProjectVersion.
+//
+// This operation requires permissions to perform the
+// rekognition:StartProjectVersion action.
 func (c *Client) StartProjectVersion(ctx context.Context, params *StartProjectVersionInput, optFns ...func(*Options)) (*StartProjectVersionOutput, error) {
 	if params == nil {
 		params = &StartProjectVersionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StartProjectVersion", params, optFns, addOperationStartProjectVersionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StartProjectVersion", params, optFns, c.addOperationStartProjectVersionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +41,11 @@ func (c *Client) StartProjectVersion(ctx context.Context, params *StartProjectVe
 
 type StartProjectVersionInput struct {
 
-	// The minimum number of inference units to use. A single inference unit represents
-	// 1 hour of processing and can support up to 5 Transaction Pers Second (TPS). Use
-	// a higher number to increase the TPS throughput of your model. You are charged
-	// for the number of inference units that you use.
+	// The minimum number of inference units to use. A single inference unit
+	// represents 1 hour of processing.
+	//
+	// Use a higher number to increase the TPS throughput of your model. You are
+	// charged for the number of inference units that you use.
 	//
 	// This member is required.
 	MinInferenceUnits *int32
@@ -46,6 +54,13 @@ type StartProjectVersionInput struct {
 	//
 	// This member is required.
 	ProjectVersionArn *string
+
+	// The maximum number of inference units to use for auto-scaling the model. If you
+	// don't specify a value, Amazon Rekognition Custom Labels doesn't auto-scale the
+	// model.
+	MaxInferenceUnits *int32
+
+	noSmithyDocumentSerde
 }
 
 type StartProjectVersionOutput struct {
@@ -55,9 +70,14 @@ type StartProjectVersionOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStartProjectVersionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStartProjectVersionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStartProjectVersion{}, middleware.After)
 	if err != nil {
 		return err
@@ -66,34 +86,38 @@ func addOperationStartProjectVersionMiddlewares(stack *middleware.Stack, options
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StartProjectVersion"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -102,10 +126,22 @@ func addOperationStartProjectVersionMiddlewares(stack *middleware.Stack, options
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStartProjectVersionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStartProjectVersion(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -117,6 +153,9 @@ func addOperationStartProjectVersionMiddlewares(stack *middleware.Stack, options
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -124,7 +163,6 @@ func newServiceMetadataMiddleware_opStartProjectVersion(region string) *awsmiddl
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StartProjectVersion",
 	}
 }

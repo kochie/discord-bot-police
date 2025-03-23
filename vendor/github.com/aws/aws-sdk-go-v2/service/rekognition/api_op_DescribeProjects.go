@@ -6,13 +6,13 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Lists and gets information about your Amazon Rekognition Custom Labels projects.
+// Gets information about your Rekognition projects.
+//
 // This operation requires permissions to perform the rekognition:DescribeProjects
 // action.
 func (c *Client) DescribeProjects(ctx context.Context, params *DescribeProjectsInput, optFns ...func(*Options)) (*DescribeProjectsOutput, error) {
@@ -20,7 +20,7 @@ func (c *Client) DescribeProjects(ctx context.Context, params *DescribeProjectsI
 		params = &DescribeProjectsInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DescribeProjects", params, optFns, addOperationDescribeProjectsMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DescribeProjects", params, optFns, c.addOperationDescribeProjectsMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -32,22 +32,33 @@ func (c *Client) DescribeProjects(ctx context.Context, params *DescribeProjectsI
 
 type DescribeProjectsInput struct {
 
+	// Specifies the type of customization to filter projects by. If no value is
+	// specified, CUSTOM_LABELS is used as a default.
+	Features []types.CustomizationFeature
+
 	// The maximum number of results to return per paginated call. The largest value
 	// you can specify is 100. If you specify a value greater than 100, a
 	// ValidationException error occurs. The default value is 100.
 	MaxResults *int32
 
 	// If the previous response was incomplete (because there is more results to
-	// retrieve), Amazon Rekognition Custom Labels returns a pagination token in the
-	// response. You can use this pagination token to retrieve the next set of results.
+	// retrieve), Rekognition returns a pagination token in the response. You can use
+	// this pagination token to retrieve the next set of results.
 	NextToken *string
+
+	// A list of the projects that you want Rekognition to describe. If you don't
+	// specify a value, the response includes descriptions for all the projects in your
+	// AWS account.
+	ProjectNames []string
+
+	noSmithyDocumentSerde
 }
 
 type DescribeProjectsOutput struct {
 
 	// If the previous response was incomplete (because there is more results to
-	// retrieve), Amazon Rekognition Custom Labels returns a pagination token in the
-	// response. You can use this pagination token to retrieve the next set of results.
+	// retrieve), Amazon Rekognition returns a pagination token in the response. You
+	// can use this pagination token to retrieve the next set of results.
 	NextToken *string
 
 	// A list of project descriptions. The list is sorted by the date and time the
@@ -56,9 +67,14 @@ type DescribeProjectsOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDescribeProjectsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDescribeProjectsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDescribeProjects{}, middleware.After)
 	if err != nil {
 		return err
@@ -67,34 +83,38 @@ func addOperationDescribeProjectsMiddlewares(stack *middleware.Stack, options Op
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DescribeProjects"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -103,7 +123,19 @@ func addOperationDescribeProjectsMiddlewares(stack *middleware.Stack, options Op
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeProjects(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -115,16 +147,11 @@ func addOperationDescribeProjectsMiddlewares(stack *middleware.Stack, options Op
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// DescribeProjectsAPIClient is a client that implements the DescribeProjects
-// operation.
-type DescribeProjectsAPIClient interface {
-	DescribeProjects(context.Context, *DescribeProjectsInput, ...func(*Options)) (*DescribeProjectsOutput, error)
-}
-
-var _ DescribeProjectsAPIClient = (*Client)(nil)
 
 // DescribeProjectsPaginatorOptions is the paginator options for DescribeProjects
 type DescribeProjectsPaginatorOptions struct {
@@ -167,12 +194,13 @@ func NewDescribeProjectsPaginator(client DescribeProjectsAPIClient, params *Desc
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *DescribeProjectsPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next DescribeProjects page.
@@ -190,6 +218,9 @@ func (p *DescribeProjectsPaginator) NextPage(ctx context.Context, optFns ...func
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeProjects(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -199,18 +230,28 @@ func (p *DescribeProjectsPaginator) NextPage(ctx context.Context, optFns ...func
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// DescribeProjectsAPIClient is a client that implements the DescribeProjects
+// operation.
+type DescribeProjectsAPIClient interface {
+	DescribeProjects(context.Context, *DescribeProjectsInput, ...func(*Options)) (*DescribeProjectsOutput, error)
+}
+
+var _ DescribeProjectsAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opDescribeProjects(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DescribeProjects",
 	}
 }

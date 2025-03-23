@@ -4,8 +4,8 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
@@ -14,58 +14,119 @@ import (
 // Detects instances of real-world entities within an image (JPEG or PNG) provided
 // as input. This includes objects like flower, tree, and table; events like
 // wedding, graduation, and birthday party; and concepts like landscape, evening,
-// and nature. For an example, see Analyzing Images Stored in an Amazon S3 Bucket
-// in the Amazon Rekognition Developer Guide. DetectLabels does not support the
-// detection of activities. However, activity detection is supported for label
-// detection in videos. For more information, see StartLabelDetection in the Amazon
-// Rekognition Developer Guide. You pass the input image as base64-encoded image
-// bytes or as a reference to an image in an Amazon S3 bucket. If you use the AWS
-// CLI to call Amazon Rekognition operations, passing image bytes is not supported.
-// The image must be either a PNG or JPEG formatted file. For each object, scene,
-// and concept the API returns one or more labels. Each label provides the object
-// name, and the level of confidence that the image contains the object. For
-// example, suppose the input image has a lighthouse, the sea, and a rock. The
-// response includes all three labels, one for each object. {Name: lighthouse,
-// Confidence: 98.4629}
-//     {Name: rock,Confidence: 79.2097}
+// and nature.
 //
-// {Name:
-// sea,Confidence: 75.061} In the preceding example, the operation returns one
-// label for each of the three objects. The operation can also return multiple
-// labels for the same object in the image. For example, if the input image shows a
-// flower (for example, a tulip), the operation might return the following three
-// labels. {Name: flower,Confidence: 99.0562}
-//     {Name: plant,Confidence:
-// 99.0562}
+// For an example, see Analyzing images stored in an Amazon S3 bucket in the
+// Amazon Rekognition Developer Guide.
 //
-// {Name: tulip,Confidence: 99.0562} In this example, the detection
-// algorithm more precisely identifies the flower as a tulip. In response, the API
-// returns an array of labels. In addition, the response also includes the
-// orientation correction. Optionally, you can specify MinConfidence to control the
-// confidence threshold for the labels returned. The default is 55%. You can also
-// add the MaxLabels parameter to limit the number of labels returned. If the
-// object detected is a person, the operation doesn't provide the same facial
-// details that the DetectFaces operation provides. DetectLabels returns bounding
-// boxes for instances of common object labels in an array of Instance objects. An
-// Instance object contains a BoundingBox object, for the location of the label on
-// the image. It also includes the confidence by which the bounding box was
-// detected. DetectLabels also returns a hierarchical taxonomy of detected labels.
-// For example, a detected car might be assigned the label car. The label car has
-// two parent labels: Vehicle (its parent) and Transportation (its
-// grandparent).
+// You pass the input image as base64-encoded image bytes or as a reference to an
+// image in an Amazon S3 bucket. If you use the AWS CLI to call Amazon Rekognition
+// operations, passing image bytes is not supported. The image must be either a PNG
+// or JPEG formatted file.
 //
-// The response returns the entire list of ancestors for a label.
-// Each ancestor is a unique label in the response. In the previous example, Car,
-// Vehicle, and Transportation are returned as unique labels in the response. This
-// is a stateless API operation. That is, the operation does not persist any data.
+// # Optional Parameters
+//
+// You can specify one or both of the GENERAL_LABELS and IMAGE_PROPERTIES feature
+// types when calling the DetectLabels API. Including GENERAL_LABELS will ensure
+// the response includes the labels detected in the input image, while including
+// IMAGE_PROPERTIES will ensure the response includes information about the image
+// quality and color.
+//
+// When using GENERAL_LABELS and/or IMAGE_PROPERTIES you can provide filtering
+// criteria to the Settings parameter. You can filter with sets of individual
+// labels or with label categories. You can specify inclusive filters, exclusive
+// filters, or a combination of inclusive and exclusive filters. For more
+// information on filtering see [Detecting Labels in an Image].
+//
+// When getting labels, you can specify MinConfidence to control the confidence
+// threshold for the labels returned. The default is 55%. You can also add the
+// MaxLabels parameter to limit the number of labels returned. The default and
+// upper limit is 1000 labels. These arguments are only valid when supplying
+// GENERAL_LABELS as a feature type.
+//
+// # Response Elements
+//
+// For each object, scene, and concept the API returns one or more labels. The API
+// returns the following types of information about labels:
+//
+//   - Name - The name of the detected label.
+//
+//   - Confidence - The level of confidence in the label assigned to a detected
+//     object.
+//
+//   - Parents - The ancestor labels for a detected label. DetectLabels returns a
+//     hierarchical taxonomy of detected labels. For example, a detected car might be
+//     assigned the label car. The label car has two parent labels: Vehicle (its
+//     parent) and Transportation (its grandparent). The response includes the all
+//     ancestors for a label, where every ancestor is a unique label. In the previous
+//     example, Car, Vehicle, and Transportation are returned as unique labels in the
+//     response.
+//
+//   - Aliases - Possible Aliases for the label.
+//
+//   - Categories - The label categories that the detected label belongs to.
+//
+//   - BoundingBox — Bounding boxes are described for all instances of detected
+//     common object labels, returned in an array of Instance objects. An Instance
+//     object contains a BoundingBox object, describing the location of the label on
+//     the input image. It also includes the confidence for the accuracy of the
+//     detected bounding box.
+//
+// The API returns the following information regarding the image, as part of the
+// ImageProperties structure:
+//
+//   - Quality - Information about the Sharpness, Brightness, and Contrast of the
+//     input image, scored between 0 to 100. Image quality is returned for the entire
+//     image, as well as the background and the foreground.
+//
+//   - Dominant Color - An array of the dominant colors in the image.
+//
+//   - Foreground - Information about the sharpness, brightness, and dominant
+//     colors of the input image’s foreground.
+//
+//   - Background - Information about the sharpness, brightness, and dominant
+//     colors of the input image’s background.
+//
+// The list of returned labels will include at least one label for every detected
+// object, along with information about that label. In the following example,
+// suppose the input image has a lighthouse, the sea, and a rock. The response
+// includes all three labels, one for each object, as well as the confidence in the
+// label:
+//
+//	{Name: lighthouse, Confidence: 98.4629}
+//
+//	{Name: rock,Confidence: 79.2097}
+//
+//	{Name: sea,Confidence: 75.061}
+//
+// The list of labels can include multiple labels for the same object. For
+// example, if the input image shows a flower (for example, a tulip), the operation
+// might return the following three labels.
+//
+//	{Name: flower,Confidence: 99.0562}
+//
+//	{Name: plant,Confidence: 99.0562}
+//
+//	{Name: tulip,Confidence: 99.0562}
+//
+// In this example, the detection algorithm more precisely identifies the flower
+// as a tulip.
+//
+// If the object detected is a person, the operation doesn't provide the same
+// facial details that the DetectFacesoperation provides.
+//
+// This is a stateless API operation that doesn't return any data.
+//
 // This operation requires permissions to perform the rekognition:DetectLabels
 // action.
+//
+// [Detecting Labels in an Image]: https://docs.aws.amazon.com/rekognition/latest/dg/labels-detect-labels-image.html
 func (c *Client) DetectLabels(ctx context.Context, params *DetectLabelsInput, optFns ...func(*Options)) (*DetectLabelsOutput, error) {
 	if params == nil {
 		params = &DetectLabelsInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DetectLabels", params, optFns, addOperationDetectLabelsMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DetectLabels", params, optFns, c.addOperationDetectLabelsMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -79,26 +140,53 @@ type DetectLabelsInput struct {
 
 	// The input image as base64-encoded bytes or an S3 object. If you use the AWS CLI
 	// to call Amazon Rekognition operations, passing image bytes is not supported.
-	// Images stored in an S3 Bucket do not need to be base64-encoded. If you are using
-	// an AWS SDK to call Amazon Rekognition, you might not need to base64-encode image
-	// bytes passed using the Bytes field. For more information, see Images in the
-	// Amazon Rekognition developer guide.
+	// Images stored in an S3 Bucket do not need to be base64-encoded.
+	//
+	// If you are using an AWS SDK to call Amazon Rekognition, you might not need to
+	// base64-encode image bytes passed using the Bytes field. For more information,
+	// see Images in the Amazon Rekognition developer guide.
 	//
 	// This member is required.
 	Image *types.Image
 
+	// A list of the types of analysis to perform. Specifying GENERAL_LABELS uses the
+	// label detection feature, while specifying IMAGE_PROPERTIES returns information
+	// regarding image color and quality. If no option is specified GENERAL_LABELS is
+	// used by default.
+	Features []types.DetectLabelsFeatureName
+
 	// Maximum number of labels you want the service to return in the response. The
-	// service returns the specified number of highest confidence labels.
+	// service returns the specified number of highest confidence labels. Only valid
+	// when GENERAL_LABELS is specified as a feature type in the Feature input
+	// parameter.
 	MaxLabels *int32
 
 	// Specifies the minimum confidence level for the labels to return. Amazon
 	// Rekognition doesn't return any labels with confidence lower than this specified
-	// value. If MinConfidence is not specified, the operation returns labels with a
-	// confidence values greater than or equal to 55 percent.
+	// value.
+	//
+	// If MinConfidence is not specified, the operation returns labels with a
+	// confidence values greater than or equal to 55 percent. Only valid when
+	// GENERAL_LABELS is specified as a feature type in the Feature input parameter.
 	MinConfidence *float32
+
+	// A list of the filters to be applied to returned detected labels and image
+	// properties. Specified filters can be inclusive, exclusive, or a combination of
+	// both. Filters can be used for individual labels or label categories. The exact
+	// label names or label categories must be supplied. For a full list of labels and
+	// label categories, see [Detecting labels].
+	//
+	// [Detecting labels]: https://docs.aws.amazon.com/rekognition/latest/dg/labels.html
+	Settings *types.DetectLabelsSettings
+
+	noSmithyDocumentSerde
 }
 
 type DetectLabelsOutput struct {
+
+	// Information about the properties of the input image, such as brightness,
+	// sharpness, contrast, and dominant colors.
+	ImageProperties *types.DetectLabelsImageProperties
 
 	// Version number of the label detection model that was used to detect labels.
 	LabelModelVersion *string
@@ -106,23 +194,31 @@ type DetectLabelsOutput struct {
 	// An array of labels for the real-world objects detected.
 	Labels []types.Label
 
-	// The value of OrientationCorrection is always null. If the input image is in
-	// .jpeg format, it might contain exchangeable image file format (Exif) metadata
-	// that includes the image's orientation. Amazon Rekognition uses this orientation
-	// information to perform image correction. The bounding box coordinates are
-	// translated to represent object locations after the orientation information in
-	// the Exif metadata is used to correct the image orientation. Images in .png
-	// format don't contain Exif metadata. Amazon Rekognition doesn’t perform image
-	// correction for images in .png format and .jpeg images without orientation
-	// information in the image Exif metadata. The bounding box coordinates aren't
-	// translated and represent the object locations before the image is rotated.
+	// The value of OrientationCorrection is always null.
+	//
+	// If the input image is in .jpeg format, it might contain exchangeable image file
+	// format (Exif) metadata that includes the image's orientation. Amazon Rekognition
+	// uses this orientation information to perform image correction. The bounding box
+	// coordinates are translated to represent object locations after the orientation
+	// information in the Exif metadata is used to correct the image orientation.
+	// Images in .png format don't contain Exif metadata.
+	//
+	// Amazon Rekognition doesn’t perform image correction for images in .png format
+	// and .jpeg images without orientation information in the image Exif metadata. The
+	// bounding box coordinates aren't translated and represent the object locations
+	// before the image is rotated.
 	OrientationCorrection types.OrientationCorrection
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDetectLabelsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDetectLabelsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDetectLabels{}, middleware.After)
 	if err != nil {
 		return err
@@ -131,34 +227,38 @@ func addOperationDetectLabelsMiddlewares(stack *middleware.Stack, options Option
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DetectLabels"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -167,10 +267,22 @@ func addOperationDetectLabelsMiddlewares(stack *middleware.Stack, options Option
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDetectLabelsValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDetectLabels(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -182,6 +294,9 @@ func addOperationDetectLabelsMiddlewares(stack *middleware.Stack, options Option
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -189,7 +304,6 @@ func newServiceMetadataMiddleware_opDetectLabels(region string) *awsmiddleware.R
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DetectLabels",
 	}
 }

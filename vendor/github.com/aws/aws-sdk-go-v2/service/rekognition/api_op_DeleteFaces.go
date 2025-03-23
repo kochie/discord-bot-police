@@ -4,21 +4,24 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Deletes faces from a collection. You specify a collection ID and an array of
-// face IDs to remove from the collection. This operation requires permissions to
-// perform the rekognition:DeleteFaces action.
+// face IDs to remove from the collection.
+//
+// This operation requires permissions to perform the rekognition:DeleteFaces
+// action.
 func (c *Client) DeleteFaces(ctx context.Context, params *DeleteFacesInput, optFns ...func(*Options)) (*DeleteFacesOutput, error) {
 	if params == nil {
 		params = &DeleteFacesInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DeleteFaces", params, optFns, addOperationDeleteFacesMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DeleteFaces", params, optFns, c.addOperationDeleteFacesMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +42,8 @@ type DeleteFacesInput struct {
 	//
 	// This member is required.
 	FaceIds []string
+
+	noSmithyDocumentSerde
 }
 
 type DeleteFacesOutput struct {
@@ -46,11 +51,19 @@ type DeleteFacesOutput struct {
 	// An array of strings (face IDs) of the faces that were deleted.
 	DeletedFaces []string
 
+	// An array of any faces that weren't deleted.
+	UnsuccessfulFaceDeletions []types.UnsuccessfulFaceDeletion
+
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDeleteFacesMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDeleteFacesMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDeleteFaces{}, middleware.After)
 	if err != nil {
 		return err
@@ -59,34 +72,38 @@ func addOperationDeleteFacesMiddlewares(stack *middleware.Stack, options Options
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DeleteFaces"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -95,10 +112,22 @@ func addOperationDeleteFacesMiddlewares(stack *middleware.Stack, options Options
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteFacesValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteFaces(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -110,6 +139,9 @@ func addOperationDeleteFacesMiddlewares(stack *middleware.Stack, options Options
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -117,7 +149,6 @@ func newServiceMetadataMiddleware_opDeleteFaces(region string) *awsmiddleware.Re
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DeleteFaces",
 	}
 }

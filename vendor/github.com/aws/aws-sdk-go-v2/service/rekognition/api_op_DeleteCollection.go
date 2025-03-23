@@ -4,21 +4,25 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Deletes the specified collection. Note that this operation removes all faces in
-// the collection. For an example, see delete-collection-procedure. This operation
-// requires permissions to perform the rekognition:DeleteCollection action.
+// the collection. For an example, see [Deleting a collection].
+//
+// This operation requires permissions to perform the rekognition:DeleteCollection
+// action.
+//
+// [Deleting a collection]: https://docs.aws.amazon.com/rekognition/latest/dg/delete-collection-procedure.html
 func (c *Client) DeleteCollection(ctx context.Context, params *DeleteCollectionInput, optFns ...func(*Options)) (*DeleteCollectionOutput, error) {
 	if params == nil {
 		params = &DeleteCollectionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DeleteCollection", params, optFns, addOperationDeleteCollectionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DeleteCollection", params, optFns, c.addOperationDeleteCollectionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +38,8 @@ type DeleteCollectionInput struct {
 	//
 	// This member is required.
 	CollectionId *string
+
+	noSmithyDocumentSerde
 }
 
 type DeleteCollectionOutput struct {
@@ -43,9 +49,14 @@ type DeleteCollectionOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDeleteCollectionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDeleteCollectionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDeleteCollection{}, middleware.After)
 	if err != nil {
 		return err
@@ -54,34 +65,38 @@ func addOperationDeleteCollectionMiddlewares(stack *middleware.Stack, options Op
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DeleteCollection"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -90,10 +105,22 @@ func addOperationDeleteCollectionMiddlewares(stack *middleware.Stack, options Op
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteCollectionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteCollection(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -105,6 +132,9 @@ func addOperationDeleteCollectionMiddlewares(stack *middleware.Stack, options Op
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -112,7 +142,6 @@ func newServiceMetadataMiddleware_opDeleteCollection(region string) *awsmiddlewa
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DeleteCollection",
 	}
 }

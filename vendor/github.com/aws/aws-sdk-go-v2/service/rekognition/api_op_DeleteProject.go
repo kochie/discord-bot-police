@@ -4,23 +4,30 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes an Amazon Rekognition Custom Labels project. To delete a project you
-// must first delete all models associated with the project. To delete a model, see
-// DeleteProjectVersion. This operation requires permissions to perform the
-// rekognition:DeleteProject action.
+// Deletes a Amazon Rekognition project. To delete a project you must first delete
+// all models or adapters associated with the project. To delete a model or
+// adapter, see DeleteProjectVersion.
+//
+// DeleteProject is an asynchronous operation. To check if the project is deleted,
+// call DescribeProjects. The project is deleted when the project no longer appears in the
+// response. Be aware that deleting a given project will also delete any
+// ProjectPolicies associated with that project.
+//
+// This operation requires permissions to perform the rekognition:DeleteProject
+// action.
 func (c *Client) DeleteProject(ctx context.Context, params *DeleteProjectInput, optFns ...func(*Options)) (*DeleteProjectOutput, error) {
 	if params == nil {
 		params = &DeleteProjectInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DeleteProject", params, optFns, addOperationDeleteProjectMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DeleteProject", params, optFns, c.addOperationDeleteProjectMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +43,8 @@ type DeleteProjectInput struct {
 	//
 	// This member is required.
 	ProjectArn *string
+
+	noSmithyDocumentSerde
 }
 
 type DeleteProjectOutput struct {
@@ -45,9 +54,14 @@ type DeleteProjectOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDeleteProjectMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDeleteProjectMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDeleteProject{}, middleware.After)
 	if err != nil {
 		return err
@@ -56,34 +70,38 @@ func addOperationDeleteProjectMiddlewares(stack *middleware.Stack, options Optio
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DeleteProject"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -92,10 +110,22 @@ func addOperationDeleteProjectMiddlewares(stack *middleware.Stack, options Optio
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteProjectValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteProject(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -107,6 +137,9 @@ func addOperationDeleteProjectMiddlewares(stack *middleware.Stack, options Optio
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -114,7 +147,6 @@ func newServiceMetadataMiddleware_opDeleteProject(region string) *awsmiddleware.
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DeleteProject",
 	}
 }

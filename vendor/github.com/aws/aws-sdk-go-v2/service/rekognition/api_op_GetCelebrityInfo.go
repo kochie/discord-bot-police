@@ -4,24 +4,29 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets the name and additional information about a celebrity based on his or her
+// Gets the name and additional information about a celebrity based on their
 // Amazon Rekognition ID. The additional information is returned as an array of
 // URLs. If there is no additional information about the celebrity, this list is
-// empty. For more information, see Recognizing Celebrities in an Image in the
-// Amazon Rekognition Developer Guide. This operation requires permissions to
-// perform the rekognition:GetCelebrityInfo action.
+// empty.
+//
+// For more information, see Getting information about a celebrity in the Amazon
+// Rekognition Developer Guide.
+//
+// This operation requires permissions to perform the rekognition:GetCelebrityInfo
+// action.
 func (c *Client) GetCelebrityInfo(ctx context.Context, params *GetCelebrityInfoInput, optFns ...func(*Options)) (*GetCelebrityInfoOutput, error) {
 	if params == nil {
 		params = &GetCelebrityInfoInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "GetCelebrityInfo", params, optFns, addOperationGetCelebrityInfoMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "GetCelebrityInfo", params, optFns, c.addOperationGetCelebrityInfoMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -33,14 +38,19 @@ func (c *Client) GetCelebrityInfo(ctx context.Context, params *GetCelebrityInfoI
 
 type GetCelebrityInfoInput struct {
 
-	// The ID for the celebrity. You get the celebrity ID from a call to the
-	// RecognizeCelebrities operation, which recognizes celebrities in an image.
+	// The ID for the celebrity. You get the celebrity ID from a call to the RecognizeCelebrities
+	// operation, which recognizes celebrities in an image.
 	//
 	// This member is required.
 	Id *string
+
+	noSmithyDocumentSerde
 }
 
 type GetCelebrityInfoOutput struct {
+
+	// Retrieves the known gender for the celebrity.
+	KnownGender *types.KnownGender
 
 	// The name of the celebrity.
 	Name *string
@@ -50,9 +60,14 @@ type GetCelebrityInfoOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationGetCelebrityInfoMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationGetCelebrityInfoMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpGetCelebrityInfo{}, middleware.After)
 	if err != nil {
 		return err
@@ -61,34 +76,38 @@ func addOperationGetCelebrityInfoMiddlewares(stack *middleware.Stack, options Op
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "GetCelebrityInfo"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -97,10 +116,22 @@ func addOperationGetCelebrityInfoMiddlewares(stack *middleware.Stack, options Op
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetCelebrityInfoValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetCelebrityInfo(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -112,6 +143,9 @@ func addOperationGetCelebrityInfoMiddlewares(stack *middleware.Stack, options Op
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -119,7 +153,6 @@ func newServiceMetadataMiddleware_opGetCelebrityInfo(region string) *awsmiddlewa
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "GetCelebrityInfo",
 	}
 }

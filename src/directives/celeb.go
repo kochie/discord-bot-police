@@ -1,8 +1,10 @@
-package main
+package directives
 
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/config"
+
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,7 +16,18 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func celebDetection(s *discordgo.Session, m *discordgo.MessageCreate) {
+var rek *rekognition.Client
+
+func init() {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rek = rekognition.NewFromConfig(cfg)
+}
+
+func CelebDetection(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.ChannelID == os.Getenv("BUSCEMI_ID") {
 		isSteveBuscemi := false
 		celebLength := 0

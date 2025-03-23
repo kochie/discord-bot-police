@@ -10,6 +10,26 @@ import (
 	"github.com/aws/smithy-go/middleware"
 )
 
+type validateOpAssociateFaces struct {
+}
+
+func (*validateOpAssociateFaces) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpAssociateFaces) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*AssociateFacesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpAssociateFacesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpCompareFaces struct {
 }
 
@@ -30,6 +50,26 @@ func (m *validateOpCompareFaces) HandleInitialize(ctx context.Context, in middle
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpCopyProjectVersion struct {
+}
+
+func (*validateOpCopyProjectVersion) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpCopyProjectVersion) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*CopyProjectVersionInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpCopyProjectVersionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpCreateCollection struct {
 }
 
@@ -45,6 +85,46 @@ func (m *validateOpCreateCollection) HandleInitialize(ctx context.Context, in mi
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpCreateCollectionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpCreateDataset struct {
+}
+
+func (*validateOpCreateDataset) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpCreateDataset) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*CreateDatasetInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpCreateDatasetInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpCreateFaceLivenessSession struct {
+}
+
+func (*validateOpCreateFaceLivenessSession) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpCreateFaceLivenessSession) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*CreateFaceLivenessSessionInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpCreateFaceLivenessSessionInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -110,6 +190,26 @@ func (m *validateOpCreateStreamProcessor) HandleInitialize(ctx context.Context, 
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpCreateUser struct {
+}
+
+func (*validateOpCreateUser) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpCreateUser) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*CreateUserInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpCreateUserInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDeleteCollection struct {
 }
 
@@ -125,6 +225,26 @@ func (m *validateOpDeleteCollection) HandleInitialize(ctx context.Context, in mi
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpDeleteCollectionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpDeleteDataset struct {
+}
+
+func (*validateOpDeleteDataset) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDeleteDataset) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DeleteDatasetInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDeleteDatasetInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -170,6 +290,26 @@ func (m *validateOpDeleteProject) HandleInitialize(ctx context.Context, in middl
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDeleteProjectPolicy struct {
+}
+
+func (*validateOpDeleteProjectPolicy) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDeleteProjectPolicy) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DeleteProjectPolicyInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDeleteProjectPolicyInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDeleteProjectVersion struct {
 }
 
@@ -210,6 +350,26 @@ func (m *validateOpDeleteStreamProcessor) HandleInitialize(ctx context.Context, 
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDeleteUser struct {
+}
+
+func (*validateOpDeleteUser) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDeleteUser) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DeleteUserInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDeleteUserInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDescribeCollection struct {
 }
 
@@ -225,6 +385,26 @@ func (m *validateOpDescribeCollection) HandleInitialize(ctx context.Context, in 
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpDescribeCollectionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpDescribeDataset struct {
+}
+
+func (*validateOpDescribeDataset) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDescribeDataset) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DescribeDatasetInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDescribeDatasetInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -390,6 +570,46 @@ func (m *validateOpDetectText) HandleInitialize(ctx context.Context, in middlewa
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDisassociateFaces struct {
+}
+
+func (*validateOpDisassociateFaces) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDisassociateFaces) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DisassociateFacesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDisassociateFacesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpDistributeDatasetEntries struct {
+}
+
+func (*validateOpDistributeDatasetEntries) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDistributeDatasetEntries) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DistributeDatasetEntriesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDistributeDatasetEntriesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpGetCelebrityInfo struct {
 }
 
@@ -470,6 +690,26 @@ func (m *validateOpGetFaceDetection) HandleInitialize(ctx context.Context, in mi
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpGetFaceLivenessSessionResults struct {
+}
+
+func (*validateOpGetFaceLivenessSessionResults) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpGetFaceLivenessSessionResults) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*GetFaceLivenessSessionResultsInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpGetFaceLivenessSessionResultsInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpGetFaceSearch struct {
 }
 
@@ -505,6 +745,26 @@ func (m *validateOpGetLabelDetection) HandleInitialize(ctx context.Context, in m
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpGetLabelDetectionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpGetMediaAnalysisJob struct {
+}
+
+func (*validateOpGetMediaAnalysisJob) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpGetMediaAnalysisJob) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*GetMediaAnalysisJobInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpGetMediaAnalysisJobInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -590,6 +850,46 @@ func (m *validateOpIndexFaces) HandleInitialize(ctx context.Context, in middlewa
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpListDatasetEntries struct {
+}
+
+func (*validateOpListDatasetEntries) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpListDatasetEntries) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ListDatasetEntriesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpListDatasetEntriesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpListDatasetLabels struct {
+}
+
+func (*validateOpListDatasetLabels) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpListDatasetLabels) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ListDatasetLabelsInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpListDatasetLabelsInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpListFaces struct {
 }
 
@@ -610,6 +910,26 @@ func (m *validateOpListFaces) HandleInitialize(ctx context.Context, in middlewar
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpListProjectPolicies struct {
+}
+
+func (*validateOpListProjectPolicies) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpListProjectPolicies) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ListProjectPoliciesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpListProjectPoliciesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpListTagsForResource struct {
 }
 
@@ -625,6 +945,46 @@ func (m *validateOpListTagsForResource) HandleInitialize(ctx context.Context, in
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpListTagsForResourceInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpListUsers struct {
+}
+
+func (*validateOpListUsers) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpListUsers) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ListUsersInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpListUsersInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpPutProjectPolicy struct {
+}
+
+func (*validateOpPutProjectPolicy) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpPutProjectPolicy) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*PutProjectPolicyInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpPutProjectPolicyInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -685,6 +1045,46 @@ func (m *validateOpSearchFaces) HandleInitialize(ctx context.Context, in middlew
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpSearchFacesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpSearchUsersByImage struct {
+}
+
+func (*validateOpSearchUsersByImage) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpSearchUsersByImage) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*SearchUsersByImageInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpSearchUsersByImageInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpSearchUsers struct {
+}
+
+func (*validateOpSearchUsers) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpSearchUsers) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*SearchUsersInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpSearchUsersInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -785,6 +1185,26 @@ func (m *validateOpStartLabelDetection) HandleInitialize(ctx context.Context, in
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpStartLabelDetectionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpStartMediaAnalysisJob struct {
+}
+
+func (*validateOpStartMediaAnalysisJob) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpStartMediaAnalysisJob) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*StartMediaAnalysisJobInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpStartMediaAnalysisJobInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -970,12 +1390,68 @@ func (m *validateOpUntagResource) HandleInitialize(ctx context.Context, in middl
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpUpdateDatasetEntries struct {
+}
+
+func (*validateOpUpdateDatasetEntries) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpUpdateDatasetEntries) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*UpdateDatasetEntriesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpUpdateDatasetEntriesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpUpdateStreamProcessor struct {
+}
+
+func (*validateOpUpdateStreamProcessor) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpUpdateStreamProcessor) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*UpdateStreamProcessorInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpUpdateStreamProcessorInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+func addOpAssociateFacesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpAssociateFaces{}, middleware.After)
+}
+
 func addOpCompareFacesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpCompareFaces{}, middleware.After)
 }
 
+func addOpCopyProjectVersionValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpCopyProjectVersion{}, middleware.After)
+}
+
 func addOpCreateCollectionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpCreateCollection{}, middleware.After)
+}
+
+func addOpCreateDatasetValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpCreateDataset{}, middleware.After)
+}
+
+func addOpCreateFaceLivenessSessionValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpCreateFaceLivenessSession{}, middleware.After)
 }
 
 func addOpCreateProjectValidationMiddleware(stack *middleware.Stack) error {
@@ -990,8 +1466,16 @@ func addOpCreateStreamProcessorValidationMiddleware(stack *middleware.Stack) err
 	return stack.Initialize.Add(&validateOpCreateStreamProcessor{}, middleware.After)
 }
 
+func addOpCreateUserValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpCreateUser{}, middleware.After)
+}
+
 func addOpDeleteCollectionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeleteCollection{}, middleware.After)
+}
+
+func addOpDeleteDatasetValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDeleteDataset{}, middleware.After)
 }
 
 func addOpDeleteFacesValidationMiddleware(stack *middleware.Stack) error {
@@ -1002,6 +1486,10 @@ func addOpDeleteProjectValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeleteProject{}, middleware.After)
 }
 
+func addOpDeleteProjectPolicyValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDeleteProjectPolicy{}, middleware.After)
+}
+
 func addOpDeleteProjectVersionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeleteProjectVersion{}, middleware.After)
 }
@@ -1010,8 +1498,16 @@ func addOpDeleteStreamProcessorValidationMiddleware(stack *middleware.Stack) err
 	return stack.Initialize.Add(&validateOpDeleteStreamProcessor{}, middleware.After)
 }
 
+func addOpDeleteUserValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDeleteUser{}, middleware.After)
+}
+
 func addOpDescribeCollectionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDescribeCollection{}, middleware.After)
+}
+
+func addOpDescribeDatasetValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDescribeDataset{}, middleware.After)
 }
 
 func addOpDescribeProjectVersionsValidationMiddleware(stack *middleware.Stack) error {
@@ -1046,6 +1542,14 @@ func addOpDetectTextValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDetectText{}, middleware.After)
 }
 
+func addOpDisassociateFacesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDisassociateFaces{}, middleware.After)
+}
+
+func addOpDistributeDatasetEntriesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDistributeDatasetEntries{}, middleware.After)
+}
+
 func addOpGetCelebrityInfoValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetCelebrityInfo{}, middleware.After)
 }
@@ -1062,12 +1566,20 @@ func addOpGetFaceDetectionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetFaceDetection{}, middleware.After)
 }
 
+func addOpGetFaceLivenessSessionResultsValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpGetFaceLivenessSessionResults{}, middleware.After)
+}
+
 func addOpGetFaceSearchValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetFaceSearch{}, middleware.After)
 }
 
 func addOpGetLabelDetectionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetLabelDetection{}, middleware.After)
+}
+
+func addOpGetMediaAnalysisJobValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpGetMediaAnalysisJob{}, middleware.After)
 }
 
 func addOpGetPersonTrackingValidationMiddleware(stack *middleware.Stack) error {
@@ -1086,12 +1598,32 @@ func addOpIndexFacesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpIndexFaces{}, middleware.After)
 }
 
+func addOpListDatasetEntriesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpListDatasetEntries{}, middleware.After)
+}
+
+func addOpListDatasetLabelsValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpListDatasetLabels{}, middleware.After)
+}
+
 func addOpListFacesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpListFaces{}, middleware.After)
 }
 
+func addOpListProjectPoliciesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpListProjectPolicies{}, middleware.After)
+}
+
 func addOpListTagsForResourceValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpListTagsForResource{}, middleware.After)
+}
+
+func addOpListUsersValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpListUsers{}, middleware.After)
+}
+
+func addOpPutProjectPolicyValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpPutProjectPolicy{}, middleware.After)
 }
 
 func addOpRecognizeCelebritiesValidationMiddleware(stack *middleware.Stack) error {
@@ -1104,6 +1636,14 @@ func addOpSearchFacesByImageValidationMiddleware(stack *middleware.Stack) error 
 
 func addOpSearchFacesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpSearchFaces{}, middleware.After)
+}
+
+func addOpSearchUsersByImageValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpSearchUsersByImage{}, middleware.After)
+}
+
+func addOpSearchUsersValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpSearchUsers{}, middleware.After)
 }
 
 func addOpStartCelebrityRecognitionValidationMiddleware(stack *middleware.Stack) error {
@@ -1124,6 +1664,10 @@ func addOpStartFaceSearchValidationMiddleware(stack *middleware.Stack) error {
 
 func addOpStartLabelDetectionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpStartLabelDetection{}, middleware.After)
+}
+
+func addOpStartMediaAnalysisJobValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpStartMediaAnalysisJob{}, middleware.After)
 }
 
 func addOpStartPersonTrackingValidationMiddleware(stack *middleware.Stack) error {
@@ -1162,6 +1706,93 @@ func addOpUntagResourceValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpUntagResource{}, middleware.After)
 }
 
+func addOpUpdateDatasetEntriesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpUpdateDatasetEntries{}, middleware.After)
+}
+
+func addOpUpdateStreamProcessorValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpUpdateStreamProcessor{}, middleware.After)
+}
+
+func validateConnectedHomeSettings(v *types.ConnectedHomeSettings) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ConnectedHomeSettings"}
+	if v.Labels == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Labels"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateCreateFaceLivenessSessionRequestSettings(v *types.CreateFaceLivenessSessionRequestSettings) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "CreateFaceLivenessSessionRequestSettings"}
+	if v.OutputConfig != nil {
+		if err := validateLivenessOutputConfig(v.OutputConfig); err != nil {
+			invalidParams.AddNested("OutputConfig", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateDatasetChanges(v *types.DatasetChanges) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DatasetChanges"}
+	if v.GroundTruth == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("GroundTruth"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateDistributeDataset(v *types.DistributeDataset) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DistributeDataset"}
+	if v.Arn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Arn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateDistributeDatasetMetadataList(v []types.DistributeDataset) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DistributeDatasetMetadataList"}
+	for i := range v {
+		if err := validateDistributeDataset(&v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateHumanLoopConfig(v *types.HumanLoopConfig) error {
 	if v == nil {
 		return nil
@@ -1172,6 +1803,51 @@ func validateHumanLoopConfig(v *types.HumanLoopConfig) error {
 	}
 	if v.FlowDefinitionArn == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("FlowDefinitionArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateLivenessOutputConfig(v *types.LivenessOutputConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "LivenessOutputConfig"}
+	if v.S3Bucket == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("S3Bucket"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateMediaAnalysisInput(v *types.MediaAnalysisInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "MediaAnalysisInput"}
+	if v.S3Object == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("S3Object"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateMediaAnalysisOutputConfig(v *types.MediaAnalysisOutputConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "MediaAnalysisOutputConfig"}
+	if v.S3Bucket == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("S3Bucket"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1216,6 +1892,71 @@ func validateProtectiveEquipmentSummarizationAttributes(v *types.ProtectiveEquip
 	}
 }
 
+func validateStreamProcessorDataSharingPreference(v *types.StreamProcessorDataSharingPreference) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "StreamProcessorDataSharingPreference"}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateStreamProcessorNotificationChannel(v *types.StreamProcessorNotificationChannel) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "StreamProcessorNotificationChannel"}
+	if v.SNSTopicArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("SNSTopicArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateStreamProcessorSettings(v *types.StreamProcessorSettings) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "StreamProcessorSettings"}
+	if v.ConnectedHome != nil {
+		if err := validateConnectedHomeSettings(v.ConnectedHome); err != nil {
+			invalidParams.AddNested("ConnectedHome", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpAssociateFacesInput(v *AssociateFacesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "AssociateFacesInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if v.UserId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("UserId"))
+	}
+	if v.FaceIds == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("FaceIds"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpCompareFacesInput(v *CompareFacesInput) error {
 	if v == nil {
 		return nil
@@ -1234,6 +1975,33 @@ func validateOpCompareFacesInput(v *CompareFacesInput) error {
 	}
 }
 
+func validateOpCopyProjectVersionInput(v *CopyProjectVersionInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "CopyProjectVersionInput"}
+	if v.SourceProjectArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("SourceProjectArn"))
+	}
+	if v.SourceProjectVersionArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("SourceProjectVersionArn"))
+	}
+	if v.DestinationProjectArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("DestinationProjectArn"))
+	}
+	if v.VersionName == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("VersionName"))
+	}
+	if v.OutputConfig == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("OutputConfig"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpCreateCollectionInput(v *CreateCollectionInput) error {
 	if v == nil {
 		return nil
@@ -1241,6 +2009,41 @@ func validateOpCreateCollectionInput(v *CreateCollectionInput) error {
 	invalidParams := smithy.InvalidParamsError{Context: "CreateCollectionInput"}
 	if v.CollectionId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpCreateDatasetInput(v *CreateDatasetInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "CreateDatasetInput"}
+	if len(v.DatasetType) == 0 {
+		invalidParams.Add(smithy.NewErrParamRequired("DatasetType"))
+	}
+	if v.ProjectArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ProjectArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpCreateFaceLivenessSessionInput(v *CreateFaceLivenessSessionInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "CreateFaceLivenessSessionInput"}
+	if v.Settings != nil {
+		if err := validateCreateFaceLivenessSessionRequestSettings(v.Settings); err != nil {
+			invalidParams.AddNested("Settings", err.(smithy.InvalidParamsError))
+		}
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1278,12 +2081,6 @@ func validateOpCreateProjectVersionInput(v *CreateProjectVersionInput) error {
 	if v.OutputConfig == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("OutputConfig"))
 	}
-	if v.TrainingData == nil {
-		invalidParams.Add(smithy.NewErrParamRequired("TrainingData"))
-	}
-	if v.TestingData == nil {
-		invalidParams.Add(smithy.NewErrParamRequired("TestingData"))
-	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	} else {
@@ -1307,9 +2104,41 @@ func validateOpCreateStreamProcessorInput(v *CreateStreamProcessorInput) error {
 	}
 	if v.Settings == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Settings"))
+	} else if v.Settings != nil {
+		if err := validateStreamProcessorSettings(v.Settings); err != nil {
+			invalidParams.AddNested("Settings", err.(smithy.InvalidParamsError))
+		}
 	}
 	if v.RoleArn == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("RoleArn"))
+	}
+	if v.NotificationChannel != nil {
+		if err := validateStreamProcessorNotificationChannel(v.NotificationChannel); err != nil {
+			invalidParams.AddNested("NotificationChannel", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.DataSharingPreference != nil {
+		if err := validateStreamProcessorDataSharingPreference(v.DataSharingPreference); err != nil {
+			invalidParams.AddNested("DataSharingPreference", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpCreateUserInput(v *CreateUserInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "CreateUserInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if v.UserId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("UserId"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1325,6 +2154,21 @@ func validateOpDeleteCollectionInput(v *DeleteCollectionInput) error {
 	invalidParams := smithy.InvalidParamsError{Context: "DeleteCollectionInput"}
 	if v.CollectionId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpDeleteDatasetInput(v *DeleteDatasetInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DeleteDatasetInput"}
+	if v.DatasetArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("DatasetArn"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1366,6 +2210,24 @@ func validateOpDeleteProjectInput(v *DeleteProjectInput) error {
 	}
 }
 
+func validateOpDeleteProjectPolicyInput(v *DeleteProjectPolicyInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DeleteProjectPolicyInput"}
+	if v.ProjectArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ProjectArn"))
+	}
+	if v.PolicyName == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("PolicyName"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpDeleteProjectVersionInput(v *DeleteProjectVersionInput) error {
 	if v == nil {
 		return nil
@@ -1396,6 +2258,24 @@ func validateOpDeleteStreamProcessorInput(v *DeleteStreamProcessorInput) error {
 	}
 }
 
+func validateOpDeleteUserInput(v *DeleteUserInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DeleteUserInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if v.UserId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("UserId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpDescribeCollectionInput(v *DescribeCollectionInput) error {
 	if v == nil {
 		return nil
@@ -1403,6 +2283,21 @@ func validateOpDescribeCollectionInput(v *DescribeCollectionInput) error {
 	invalidParams := smithy.InvalidParamsError{Context: "DescribeCollectionInput"}
 	if v.CollectionId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpDescribeDatasetInput(v *DescribeDatasetInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DescribeDatasetInput"}
+	if v.DatasetArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("DatasetArn"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1544,6 +2439,46 @@ func validateOpDetectTextInput(v *DetectTextInput) error {
 	}
 }
 
+func validateOpDisassociateFacesInput(v *DisassociateFacesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DisassociateFacesInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if v.UserId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("UserId"))
+	}
+	if v.FaceIds == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("FaceIds"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpDistributeDatasetEntriesInput(v *DistributeDatasetEntriesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DistributeDatasetEntriesInput"}
+	if v.Datasets == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Datasets"))
+	} else if v.Datasets != nil {
+		if err := validateDistributeDatasetMetadataList(v.Datasets); err != nil {
+			invalidParams.AddNested("Datasets", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpGetCelebrityInfoInput(v *GetCelebrityInfoInput) error {
 	if v == nil {
 		return nil
@@ -1604,6 +2539,21 @@ func validateOpGetFaceDetectionInput(v *GetFaceDetectionInput) error {
 	}
 }
 
+func validateOpGetFaceLivenessSessionResultsInput(v *GetFaceLivenessSessionResultsInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "GetFaceLivenessSessionResultsInput"}
+	if v.SessionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("SessionId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpGetFaceSearchInput(v *GetFaceSearchInput) error {
 	if v == nil {
 		return nil
@@ -1624,6 +2574,21 @@ func validateOpGetLabelDetectionInput(v *GetLabelDetectionInput) error {
 		return nil
 	}
 	invalidParams := smithy.InvalidParamsError{Context: "GetLabelDetectionInput"}
+	if v.JobId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("JobId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpGetMediaAnalysisJobInput(v *GetMediaAnalysisJobInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "GetMediaAnalysisJobInput"}
 	if v.JobId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("JobId"))
 	}
@@ -1697,6 +2662,36 @@ func validateOpIndexFacesInput(v *IndexFacesInput) error {
 	}
 }
 
+func validateOpListDatasetEntriesInput(v *ListDatasetEntriesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ListDatasetEntriesInput"}
+	if v.DatasetArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("DatasetArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpListDatasetLabelsInput(v *ListDatasetLabelsInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ListDatasetLabelsInput"}
+	if v.DatasetArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("DatasetArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpListFacesInput(v *ListFacesInput) error {
 	if v == nil {
 		return nil
@@ -1712,6 +2707,21 @@ func validateOpListFacesInput(v *ListFacesInput) error {
 	}
 }
 
+func validateOpListProjectPoliciesInput(v *ListProjectPoliciesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ListProjectPoliciesInput"}
+	if v.ProjectArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ProjectArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpListTagsForResourceInput(v *ListTagsForResourceInput) error {
 	if v == nil {
 		return nil
@@ -1719,6 +2729,42 @@ func validateOpListTagsForResourceInput(v *ListTagsForResourceInput) error {
 	invalidParams := smithy.InvalidParamsError{Context: "ListTagsForResourceInput"}
 	if v.ResourceArn == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("ResourceArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpListUsersInput(v *ListUsersInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ListUsersInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpPutProjectPolicyInput(v *PutProjectPolicyInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "PutProjectPolicyInput"}
+	if v.ProjectArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ProjectArn"))
+	}
+	if v.PolicyName == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("PolicyName"))
+	}
+	if v.PolicyDocument == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("PolicyDocument"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1770,6 +2816,39 @@ func validateOpSearchFacesInput(v *SearchFacesInput) error {
 	}
 	if v.FaceId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("FaceId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpSearchUsersByImageInput(v *SearchUsersByImageInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "SearchUsersByImageInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
+	}
+	if v.Image == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Image"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpSearchUsersInput(v *SearchUsersInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "SearchUsersInput"}
+	if v.CollectionId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("CollectionId"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1872,6 +2951,35 @@ func validateOpStartLabelDetectionInput(v *StartLabelDetectionInput) error {
 	if v.NotificationChannel != nil {
 		if err := validateNotificationChannel(v.NotificationChannel); err != nil {
 			invalidParams.AddNested("NotificationChannel", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpStartMediaAnalysisJobInput(v *StartMediaAnalysisJobInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "StartMediaAnalysisJobInput"}
+	if v.OperationsConfig == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("OperationsConfig"))
+	}
+	if v.Input == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Input"))
+	} else if v.Input != nil {
+		if err := validateMediaAnalysisInput(v.Input); err != nil {
+			invalidParams.AddNested("Input", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.OutputConfig == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("OutputConfig"))
+	} else if v.OutputConfig != nil {
+		if err := validateMediaAnalysisOutputConfig(v.OutputConfig); err != nil {
+			invalidParams.AddNested("OutputConfig", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {
@@ -2035,6 +3143,48 @@ func validateOpUntagResourceInput(v *UntagResourceInput) error {
 	}
 	if v.TagKeys == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("TagKeys"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpUpdateDatasetEntriesInput(v *UpdateDatasetEntriesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "UpdateDatasetEntriesInput"}
+	if v.DatasetArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("DatasetArn"))
+	}
+	if v.Changes == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Changes"))
+	} else if v.Changes != nil {
+		if err := validateDatasetChanges(v.Changes); err != nil {
+			invalidParams.AddNested("Changes", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpUpdateStreamProcessorInput(v *UpdateStreamProcessorInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "UpdateStreamProcessorInput"}
+	if v.Name == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Name"))
+	}
+	if v.DataSharingPreferenceForUpdate != nil {
+		if err := validateStreamProcessorDataSharingPreference(v.DataSharingPreferenceForUpdate); err != nil {
+			invalidParams.AddNested("DataSharingPreferenceForUpdate", err.(smithy.InvalidParamsError))
+		}
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

@@ -4,30 +4,33 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Starts the asynchronous search for faces in a collection that match the faces of
-// persons detected in a stored video. The video must be stored in an Amazon S3
-// bucket. Use Video to specify the bucket name and the filename of the video.
-// StartFaceSearch returns a job identifier (JobId) which you use to get the search
-// results once the search has completed. When searching is finished, Amazon
-// Rekognition Video publishes a completion status to the Amazon Simple
-// Notification Service topic that you specify in NotificationChannel. To get the
-// search results, first check that the status value published to the Amazon SNS
-// topic is SUCCEEDED. If so, call GetFaceSearch and pass the job identifier
-// (JobId) from the initial call to StartFaceSearch. For more information, see
-// procedure-person-search-videos.
+// Starts the asynchronous search for faces in a collection that match the faces
+// of persons detected in a stored video.
+//
+// The video must be stored in an Amazon S3 bucket. Use Video to specify the bucket
+// name and the filename of the video. StartFaceSearch returns a job identifier (
+// JobId ) which you use to get the search results once the search has completed.
+// When searching is finished, Amazon Rekognition Video publishes a completion
+// status to the Amazon Simple Notification Service topic that you specify in
+// NotificationChannel . To get the search results, first check that the status
+// value published to the Amazon SNS topic is SUCCEEDED . If so, call GetFaceSearch and pass
+// the job identifier ( JobId ) from the initial call to StartFaceSearch . For more
+// information, see [Searching stored videos for faces].
+//
+// [Searching stored videos for faces]: https://docs.aws.amazon.com/rekognition/latest/dg/procedure-person-search-videos.html
 func (c *Client) StartFaceSearch(ctx context.Context, params *StartFaceSearchInput, optFns ...func(*Options)) (*StartFaceSearchOutput, error) {
 	if params == nil {
 		params = &StartFaceSearchInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StartFaceSearch", params, optFns, addOperationStartFaceSearchMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StartFaceSearch", params, optFns, c.addOperationStartFaceSearchMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -67,21 +70,30 @@ type StartFaceSearchInput struct {
 	JobTag *string
 
 	// The ARN of the Amazon SNS topic to which you want Amazon Rekognition Video to
-	// publish the completion status of the search.
+	// publish the completion status of the search. The Amazon SNS topic must have a
+	// topic name that begins with AmazonRekognition if you are using the
+	// AmazonRekognitionServiceRole permissions policy to access the topic.
 	NotificationChannel *types.NotificationChannel
+
+	noSmithyDocumentSerde
 }
 
 type StartFaceSearchOutput struct {
 
-	// The identifier for the search job. Use JobId to identify the job in a subsequent
-	// call to GetFaceSearch.
+	// The identifier for the search job. Use JobId to identify the job in a
+	// subsequent call to GetFaceSearch .
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStartFaceSearchMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStartFaceSearchMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStartFaceSearch{}, middleware.After)
 	if err != nil {
 		return err
@@ -90,34 +102,38 @@ func addOperationStartFaceSearchMiddlewares(stack *middleware.Stack, options Opt
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StartFaceSearch"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -126,10 +142,22 @@ func addOperationStartFaceSearchMiddlewares(stack *middleware.Stack, options Opt
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStartFaceSearchValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStartFaceSearch(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -141,6 +169,9 @@ func addOperationStartFaceSearchMiddlewares(stack *middleware.Stack, options Opt
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -148,7 +179,6 @@ func newServiceMetadataMiddleware_opStartFaceSearch(region string) *awsmiddlewar
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StartFaceSearch",
 	}
 }

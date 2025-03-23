@@ -4,22 +4,26 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Creates a new Amazon Rekognition Custom Labels project. A project is a logical
-// grouping of resources (images, Labels, models) and operations (training,
-// evaluation and detection). This operation requires permissions to perform the
-// rekognition:CreateProject action.
+// Creates a new Amazon Rekognition project. A project is a group of resources
+// (datasets, model versions) that you use to create and manage a Amazon
+// Rekognition Custom Labels Model or custom adapter. You can specify a feature to
+// create the project with, if no feature is specified then Custom Labels is used
+// by default. For adapters, you can also choose whether or not to have the project
+// auto update by using the AutoUpdate argument. This operation requires
+// permissions to perform the rekognition:CreateProject action.
 func (c *Client) CreateProject(ctx context.Context, params *CreateProjectInput, optFns ...func(*Options)) (*CreateProjectOutput, error) {
 	if params == nil {
 		params = &CreateProjectInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "CreateProject", params, optFns, addOperationCreateProjectMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "CreateProject", params, optFns, c.addOperationCreateProjectMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +39,20 @@ type CreateProjectInput struct {
 	//
 	// This member is required.
 	ProjectName *string
+
+	// Specifies whether automatic retraining should be attempted for the versions of
+	// the project. Automatic retraining is done as a best effort. Required argument
+	// for Content Moderation. Applicable only to adapters.
+	AutoUpdate types.ProjectAutoUpdate
+
+	// Specifies feature that is being customized. If no value is provided
+	// CUSTOM_LABELS is used as a default.
+	Feature types.CustomizationFeature
+
+	// A set of tags (key-value pairs) that you want to attach to the project.
+	Tags map[string]string
+
+	noSmithyDocumentSerde
 }
 
 type CreateProjectOutput struct {
@@ -45,9 +63,14 @@ type CreateProjectOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationCreateProjectMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationCreateProjectMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpCreateProject{}, middleware.After)
 	if err != nil {
 		return err
@@ -56,34 +79,38 @@ func addOperationCreateProjectMiddlewares(stack *middleware.Stack, options Optio
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "CreateProject"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -92,10 +119,22 @@ func addOperationCreateProjectMiddlewares(stack *middleware.Stack, options Optio
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCreateProjectValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opCreateProject(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -107,6 +146,9 @@ func addOperationCreateProjectMiddlewares(stack *middleware.Stack, options Optio
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -114,7 +156,6 @@ func newServiceMetadataMiddleware_opCreateProject(region string) *awsmiddleware.
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "CreateProject",
 	}
 }

@@ -3,14 +3,16 @@
 package types
 
 import (
+	smithydocument "github.com/aws/smithy-go/document"
 	"time"
 )
 
-// Structure containing the estimated age range, in years, for a face. Amazon
-// Rekognition estimates an age range for faces detected in the input image.
-// Estimated age ranges can overlap. A face of a 5-year-old might have an estimated
-// range of 4-6, while the face of a 6-year-old might have an estimated range of
-// 4-8.
+// Structure containing the estimated age range, in years, for a face.
+//
+// Amazon Rekognition estimates an age range for faces detected in the input
+// image. Estimated age ranges can overlap. A face of a 5-year-old might have an
+// estimated range of 4-6, while the face of a 6-year-old might have an estimated
+// range of 4-8.
 type AgeRange struct {
 
 	// The highest estimated age.
@@ -18,21 +20,33 @@ type AgeRange struct {
 
 	// The lowest estimated age.
 	Low *int32
+
+	noSmithyDocumentSerde
 }
 
-// Assets are the images that you use to train and evaluate a model version. Assets
-// can also contain validation information that you use to debug a failed model
-// training.
+// Assets are the images that you use to train and evaluate a model version.
+// Assets can also contain validation information that you use to debug a failed
+// model training.
 type Asset struct {
 
 	// The S3 bucket that contains an Amazon Sagemaker Ground Truth format manifest
 	// file.
 	GroundTruthManifest *GroundTruthManifest
+
+	noSmithyDocumentSerde
+}
+
+// Provides face metadata for the faces that are associated to a specific UserID.
+type AssociatedFace struct {
+
+	// Unique identifier assigned to the face.
+	FaceId *string
+
+	noSmithyDocumentSerde
 }
 
 // Metadata information about an audio stream. An array of AudioMetadata objects
-// for the audio streams found in a stored video is returned by
-// GetSegmentDetection.
+// for the audio streams found in a stored video is returned by GetSegmentDetection.
 type AudioMetadata struct {
 
 	// The audio codec used to encode or decode the audio stream.
@@ -46,6 +60,50 @@ type AudioMetadata struct {
 
 	// The sample rate for the audio stream.
 	SampleRate *int64
+
+	noSmithyDocumentSerde
+}
+
+// An image that is picked from the Face Liveness video and returned for audit
+// trail purposes, returned as Base64-encoded bytes.
+type AuditImage struct {
+
+	// Identifies the bounding box around the label, face, text, object of interest,
+	// or personal protective equipment. The left (x-coordinate) and top
+	// (y-coordinate) are coordinates representing the top and left sides of the
+	// bounding box. Note that the upper-left corner of the image is the origin (0,0).
+	//
+	// The top and left values returned are ratios of the overall image size. For
+	// example, if the input image is 700x200 pixels, and the top-left coordinate of
+	// the bounding box is 350x50 pixels, the API returns a left value of 0.5
+	// (350/700) and a top value of 0.25 (50/200).
+	//
+	// The width and height values represent the dimensions of the bounding box as a
+	// ratio of the overall image dimension. For example, if the input image is 700x200
+	// pixels, and the bounding box width is 70 pixels, the width returned is 0.1.
+	//
+	// The bounding box coordinates can have negative values. For example, if Amazon
+	// Rekognition is able to detect a face that is at the image edge and is only
+	// partially visible, the service can return coordinates that are outside the image
+	// bounds and, depending on the image edge, you might get negative values or values
+	// greater than 1 for the left or top values.
+	BoundingBox *BoundingBox
+
+	// The Base64-encoded bytes representing an image selected from the Face Liveness
+	// video and returned for audit purposes.
+	Bytes []byte
+
+	// Provides the S3 bucket name and object name.
+	//
+	// The region for the S3 bucket containing the S3 object must match the region you
+	// use for Amazon Rekognition operations.
+	//
+	// For Amazon Rekognition to process an S3 object, the user must have permission
+	// to access the S3 object. For more information, see How Amazon Rekognition works
+	// with IAM in the Amazon Rekognition Developer Guide.
+	S3Object *S3Object
+
+	noSmithyDocumentSerde
 }
 
 // Indicates whether or not the face has a beard, and the confidence level in the
@@ -57,23 +115,63 @@ type Beard struct {
 
 	// Boolean value that indicates whether the face has beard or not.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
-// Identifies the bounding box around the label, face, text or personal protective
-// equipment. The left (x-coordinate) and top (y-coordinate) are coordinates
-// representing the top and left sides of the bounding box. Note that the
-// upper-left corner of the image is the origin (0,0). The top and left values
-// returned are ratios of the overall image size. For example, if the input image
-// is 700x200 pixels, and the top-left coordinate of the bounding box is 350x50
-// pixels, the API returns a left value of 0.5 (350/700) and a top value of 0.25
-// (50/200). The width and height values represent the dimensions of the bounding
-// box as a ratio of the overall image dimension. For example, if the input image
-// is 700x200 pixels, and the bounding box width is 70 pixels, the width returned
-// is 0.1. The bounding box coordinates can have negative values. For example, if
-// Amazon Rekognition is able to detect a face that is at the image edge and is
-// only partially visible, the service can return coordinates that are outside the
-// image bounds and, depending on the image edge, you might get negative values or
-// values greater than 1 for the left or top values.
+//	A filter that allows you to control the black frame detection by specifying
+//
+// the black levels and pixel coverage of black pixels in a frame. As videos can
+// come from multiple sources, formats, and time periods, they may contain
+// different standards and varying noise levels for black frames that need to be
+// accounted for. For more information, see StartSegmentDetection.
+type BlackFrame struct {
+
+	//  A threshold used to determine the maximum luminance value for a pixel to be
+	// considered black. In a full color range video, luminance values range from
+	// 0-255. A pixel value of 0 is pure black, and the most strict filter. The maximum
+	// black pixel value is computed as follows: max_black_pixel_value =
+	// minimum_luminance + MaxPixelThreshold *luminance_range.
+	//
+	// For example, for a full range video with BlackPixelThreshold = 0.1,
+	// max_black_pixel_value is 0 + 0.1 * (255-0) = 25.5.
+	//
+	// The default value of MaxPixelThreshold is 0.2, which maps to a
+	// max_black_pixel_value of 51 for a full range video. You can lower this threshold
+	// to be more strict on black levels.
+	MaxPixelThreshold *float32
+
+	//  The minimum percentage of pixels in a frame that need to have a luminance
+	// below the max_black_pixel_value for a frame to be considered a black frame.
+	// Luminance is calculated using the BT.709 matrix.
+	//
+	// The default value is 99, which means at least 99% of all pixels in the frame
+	// are black pixels as per the MaxPixelThreshold set. You can reduce this value to
+	// allow more noise on the black frame.
+	MinCoveragePercentage *float32
+
+	noSmithyDocumentSerde
+}
+
+// Identifies the bounding box around the label, face, text, object of interest,
+// or personal protective equipment. The left (x-coordinate) and top
+// (y-coordinate) are coordinates representing the top and left sides of the
+// bounding box. Note that the upper-left corner of the image is the origin (0,0).
+//
+// The top and left values returned are ratios of the overall image size. For
+// example, if the input image is 700x200 pixels, and the top-left coordinate of
+// the bounding box is 350x50 pixels, the API returns a left value of 0.5
+// (350/700) and a top value of 0.25 (50/200).
+//
+// The width and height values represent the dimensions of the bounding box as a
+// ratio of the overall image dimension. For example, if the input image is 700x200
+// pixels, and the bounding box width is 70 pixels, the width returned is 0.1.
+//
+// The bounding box coordinates can have negative values. For example, if Amazon
+// Rekognition is able to detect a face that is at the image edge and is only
+// partially visible, the service can return coordinates that are outside the image
+// bounds and, depending on the image edge, you might get negative values or values
+// greater than 1 for the left or top values.
 type BoundingBox struct {
 
 	// Height of the bounding box as a ratio of the overall image height.
@@ -87,10 +185,11 @@ type BoundingBox struct {
 
 	// Width of the bounding box as a ratio of the overall image width.
 	Width *float32
+
+	noSmithyDocumentSerde
 }
 
-// Provides information about a celebrity recognized by the RecognizeCelebrities
-// operation.
+// Provides information about a celebrity recognized by the RecognizeCelebrities operation.
 type Celebrity struct {
 
 	// Provides information about the celebrity's face, such as its location on the
@@ -99,6 +198,10 @@ type Celebrity struct {
 
 	// A unique identifier for the celebrity.
 	Id *string
+
+	// The known gender identity for the celebrity that matches the provided ID. The
+	// known gender identity can be Male, Female, Nonbinary, or Unlisted.
+	KnownGender *KnownGender
 
 	// The confidence, in percentage, that Amazon Rekognition has that the recognized
 	// face is the celebrity.
@@ -110,6 +213,8 @@ type Celebrity struct {
 	// An array of URLs pointing to additional information about the celebrity. If
 	// there is no additional information about the celebrity, this list is empty.
 	Urls []string
+
+	noSmithyDocumentSerde
 }
 
 // Information about a recognized celebrity.
@@ -128,11 +233,16 @@ type CelebrityDetail struct {
 	// The unique identifier for the celebrity.
 	Id *string
 
+	// Retrieves the known gender for the celebrity.
+	KnownGender *KnownGender
+
 	// The name of the celebrity.
 	Name *string
 
 	// An array of URLs pointing to additional celebrity information.
 	Urls []string
+
+	noSmithyDocumentSerde
 }
 
 // Information about a detected celebrity and the time the celebrity was detected
@@ -144,12 +254,15 @@ type CelebrityRecognition struct {
 	Celebrity *CelebrityDetail
 
 	// The time, in milliseconds from the start of the video, that the celebrity was
-	// recognized.
+	// recognized. Note that Timestamp is not guaranteed to be accurate to the
+	// individual frame where the celebrity first appears.
 	Timestamp int64
+
+	noSmithyDocumentSerde
 }
 
 // Provides face metadata for target image faces that are analyzed by CompareFaces
-// and RecognizeCelebrities.
+// and RecognizeCelebrities .
 type ComparedFace struct {
 
 	// Bounding box of the face.
@@ -157,6 +270,11 @@ type ComparedFace struct {
 
 	// Level of confidence that what the bounding box contains is a face.
 	Confidence *float32
+
+	//  The emotions that appear to be expressed on the face, and the confidence level
+	// in the determination. Valid values include "Happy", "Sad", "Angry", "Confused",
+	// "Disgusted", "Surprised", "Calm", "Unknown", and "Fear".
+	Emotions []Emotion
 
 	// An array of facial landmarks.
 	Landmarks []Landmark
@@ -166,6 +284,12 @@ type ComparedFace struct {
 
 	// Identifies face image brightness and sharpness.
 	Quality *ImageQuality
+
+	//  Indicates whether or not the face is smiling, and the confidence level in the
+	// determination.
+	Smile *Smile
+
+	noSmithyDocumentSerde
 }
 
 // Type that describes the face Amazon Rekognition chose to compare with the faces
@@ -179,12 +303,14 @@ type ComparedSourceImageFace struct {
 
 	// Confidence level that the selected bounding box contains a face.
 	Confidence *float32
+
+	noSmithyDocumentSerde
 }
 
 // Provides information about a face in a target image that matches the source
-// image face analyzed by CompareFaces. The Face property contains the bounding box
-// of the face in the target image. The Similarity property is the confidence that
-// the source image face matches the face in the bounding box.
+// image face analyzed by CompareFaces . The Face property contains the bounding
+// box of the face in the target image. The Similarity property is the confidence
+// that the source image face matches the face in the bounding box.
 type CompareFacesMatch struct {
 
 	// Provides face metadata (bounding box and confidence that the bounding box
@@ -193,28 +319,150 @@ type CompareFacesMatch struct {
 
 	// Level of confidence that the faces match.
 	Similarity *float32
+
+	noSmithyDocumentSerde
 }
 
-// Information about an unsafe content label detection in a stored video.
+//	Label detection settings to use on a streaming video. Defining the settings is
+//
+// required in the request parameter for CreateStreamProcessor. Including this setting in the
+// CreateStreamProcessor request enables you to use the stream processor for label
+// detection. You can then select what you want the stream processor to detect,
+// such as people or pets. When the stream processor has started, one notification
+// is sent for each object class specified. For example, if packages and pets are
+// selected, one SNS notification is published the first time a package is detected
+// and one SNS notification is published the first time a pet is detected, as well
+// as an end-of-session summary.
+type ConnectedHomeSettings struct {
+
+	//  Specifies what you want to detect in the video, such as people, packages, or
+	// pets. The current valid labels you can include in this list are: "PERSON",
+	// "PET", "PACKAGE", and "ALL".
+	//
+	// This member is required.
+	Labels []string
+
+	//  The minimum confidence required to label an object in the video.
+	MinConfidence *float32
+
+	noSmithyDocumentSerde
+}
+
+//	The label detection settings you want to use in your stream processor. This
+//
+// includes the labels you want the stream processor to detect and the minimum
+// confidence level allowed to label objects.
+type ConnectedHomeSettingsForUpdate struct {
+
+	//  Specifies what you want to detect in the video, such as people, packages, or
+	// pets. The current valid labels you can include in this list are: "PERSON",
+	// "PET", "PACKAGE", and "ALL".
+	Labels []string
+
+	//  The minimum confidence required to label an object in the video.
+	MinConfidence *float32
+
+	noSmithyDocumentSerde
+}
+
+// Information about an inappropriate, unwanted, or offensive content label
+// detection in a stored video.
 type ContentModerationDetection struct {
 
-	// The unsafe content label detected by in the stored video.
+	// A list of predicted results for the type of content an image contains. For
+	// example, the image content might be from animation, sports, or a video game.
+	ContentTypes []ContentType
+
+	//  The time duration of a segment in milliseconds, I.e. time elapsed from
+	// StartTimestampMillis to EndTimestampMillis.
+	DurationMillis *int64
+
+	//  The time in milliseconds defining the end of the timeline segment containing a
+	// continuously detected moderation label.
+	EndTimestampMillis *int64
+
+	// The content moderation label detected by in the stored video.
 	ModerationLabel *ModerationLabel
 
-	// Time, in milliseconds from the beginning of the video, that the unsafe content
-	// label was detected.
+	// The time in milliseconds defining the start of the timeline segment containing
+	// a continuously detected moderation label.
+	StartTimestampMillis *int64
+
+	// Time, in milliseconds from the beginning of the video, that the content
+	// moderation label was detected. Note that Timestamp is not guaranteed to be
+	// accurate to the individual frame where the moderated content first appears.
 	Timestamp int64
+
+	noSmithyDocumentSerde
+}
+
+// Contains information regarding the confidence and name of a detected content
+// type.
+type ContentType struct {
+
+	// The confidence level of the label given
+	Confidence *float32
+
+	// The name of the label
+	Name *string
+
+	noSmithyDocumentSerde
 }
 
 // Information about an item of Personal Protective Equipment covering a
 // corresponding body part. For more information, see DetectProtectiveEquipment.
 type CoversBodyPart struct {
 
-	// The confidence that Amazon Rekognition has in the value of Value.
+	// The confidence that Amazon Rekognition has in the value of Value .
 	Confidence *float32
 
 	// True if the PPE covers the corresponding body part, otherwise false.
 	Value bool
+
+	noSmithyDocumentSerde
+}
+
+// A session settings object. It contains settings for the operation to be
+// performed. It accepts arguments for OutputConfig and AuditImagesLimit.
+type CreateFaceLivenessSessionRequestSettings struct {
+
+	// Number of audit images to be returned back. Takes an integer between 0-4. Any
+	// integer less than 0 will return 0, any integer above 4 will return 4 images in
+	// the response. By default, it is set to 0. The limit is best effort and is based
+	// on the actual duration of the selfie-video.
+	AuditImagesLimit *int32
+
+	// Can specify the location of an Amazon S3 bucket, where reference and audit
+	// images will be stored. Note that the Amazon S3 bucket must be located in the
+	// caller's AWS account and in the same region as the Face Liveness end-point.
+	// Additionally, the Amazon S3 object keys are auto-generated by the Face Liveness
+	// system. Requires that the caller has the s3:PutObject permission on the Amazon
+	// S3 bucket.
+	OutputConfig *LivenessOutputConfig
+
+	noSmithyDocumentSerde
+}
+
+// Feature specific configuration for the training job. Configuration provided for
+// the job must match the feature type parameter associated with project. If
+// configuration and feature type do not match an InvalidParameterException is
+// returned.
+type CustomizationFeatureConfig struct {
+
+	// Configuration options for Custom Moderation training.
+	ContentModeration *CustomizationFeatureContentModerationConfig
+
+	noSmithyDocumentSerde
+}
+
+// Configuration options for Content Moderation training.
+type CustomizationFeatureContentModerationConfig struct {
+
+	// The confidence level you plan to use to identify if unsafe content is present
+	// during inference.
+	ConfidenceThreshold *float32
+
+	noSmithyDocumentSerde
 }
 
 // A custom label detected in an image by a call to DetectCustomLabels.
@@ -231,6 +479,154 @@ type CustomLabel struct {
 
 	// The name of the custom label.
 	Name *string
+
+	noSmithyDocumentSerde
+}
+
+//	Describes updates or additions to a dataset. A Single update or addition is an
+//
+// entry (JSON Line) that provides information about a single image. To update an
+// existing entry, you match the source-ref field of the update entry with the
+// source-ref filed of the entry that you want to update. If the source-ref field
+// doesn't match an existing entry, the entry is added to dataset as a new entry.
+type DatasetChanges struct {
+
+	// A Base64-encoded binary data object containing one or JSON lines that either
+	// update the dataset or are additions to the dataset. You change a dataset by
+	// calling UpdateDatasetEntries. If you are using an AWS SDK to call UpdateDatasetEntries , you don't
+	// need to encode Changes as the SDK encodes the data for you.
+	//
+	// For example JSON lines, see Image-Level labels in manifest files and and Object
+	// localization in manifest files in the Amazon Rekognition Custom Labels Developer
+	// Guide.
+	//
+	// This member is required.
+	GroundTruth []byte
+
+	noSmithyDocumentSerde
+}
+
+//	A description for a dataset. For more information, see DescribeDataset.
+//
+// The status fields Status , StatusMessage , and StatusMessageCode reflect the
+// last operation on the dataset.
+type DatasetDescription struct {
+
+	//  The Unix timestamp for the time and date that the dataset was created.
+	CreationTimestamp *time.Time
+
+	//  The status message code for the dataset.
+	DatasetStats *DatasetStats
+
+	//  The Unix timestamp for the date and time that the dataset was last updated.
+	LastUpdatedTimestamp *time.Time
+
+	//  The status of the dataset.
+	Status DatasetStatus
+
+	//  The status message for the dataset.
+	StatusMessage *string
+
+	//  The status message code for the dataset operation. If a service error occurs,
+	// try the API call again later. If a client error occurs, check the input
+	// parameters to the dataset API call that failed.
+	StatusMessageCode DatasetStatusMessageCode
+
+	noSmithyDocumentSerde
+}
+
+// Describes a dataset label. For more information, see ListDatasetLabels.
+type DatasetLabelDescription struct {
+
+	//  The name of the label.
+	LabelName *string
+
+	//  Statistics about the label.
+	LabelStats *DatasetLabelStats
+
+	noSmithyDocumentSerde
+}
+
+// Statistics about a label used in a dataset. For more information, see DatasetLabelDescription.
+type DatasetLabelStats struct {
+
+	//  The total number of images that have the label assigned to a bounding box.
+	BoundingBoxCount *int32
+
+	//  The total number of images that use the label.
+	EntryCount *int32
+
+	noSmithyDocumentSerde
+}
+
+//	Summary information for an Amazon Rekognition Custom Labels dataset. For more
+//
+// information, see ProjectDescription.
+type DatasetMetadata struct {
+
+	//  The Unix timestamp for the date and time that the dataset was created.
+	CreationTimestamp *time.Time
+
+	//  The Amazon Resource Name (ARN) for the dataset.
+	DatasetArn *string
+
+	//  The type of the dataset.
+	DatasetType DatasetType
+
+	//  The status for the dataset.
+	Status DatasetStatus
+
+	//  The status message for the dataset.
+	StatusMessage *string
+
+	//  The status message code for the dataset operation. If a service error occurs,
+	// try the API call again later. If a client error occurs, check the input
+	// parameters to the dataset API call that failed.
+	StatusMessageCode DatasetStatusMessageCode
+
+	noSmithyDocumentSerde
+}
+
+//	The source that Amazon Rekognition Custom Labels uses to create a dataset. To
+//
+// use an Amazon Sagemaker format manifest file, specify the S3 bucket location in
+// the GroundTruthManifest field. The S3 bucket must be in your AWS account. To
+// create a copy of an existing dataset, specify the Amazon Resource Name (ARN) of
+// an existing dataset in DatasetArn .
+//
+// You need to specify a value for DatasetArn or GroundTruthManifest , but not
+// both. if you supply both values, or if you don't specify any values, an
+// InvalidParameterException exception occurs.
+//
+// For more information, see CreateDataset.
+type DatasetSource struct {
+
+	//  The ARN of an Amazon Rekognition Custom Labels dataset that you want to copy.
+	DatasetArn *string
+
+	// The S3 bucket that contains an Amazon Sagemaker Ground Truth format manifest
+	// file.
+	GroundTruthManifest *GroundTruthManifest
+
+	noSmithyDocumentSerde
+}
+
+// Provides statistics about a dataset. For more information, see DescribeDataset.
+type DatasetStats struct {
+
+	//  The total number of entries that contain at least one error.
+	ErrorEntries *int32
+
+	//  The total number of images in the dataset that have labels.
+	LabeledEntries *int32
+
+	//  The total number of images in the dataset.
+	TotalEntries *int32
+
+	//  The total number of labels declared in the dataset.
+	TotalLabels *int32
+
+	noSmithyDocumentSerde
 }
 
 // A set of parameters that allow you to filter out certain results from your
@@ -248,9 +644,108 @@ type DetectionFilter struct {
 	MinBoundingBoxWidth *float32
 
 	// Sets the confidence of word detection. Words with detection confidence below
-	// this will be excluded from the result. Values should be between 50 and 100 as
-	// Text in Video will not return any result below 50.
+	// this will be excluded from the result. Values should be between 0 and 100. The
+	// default MinConfidence is 80.
 	MinConfidence *float32
+
+	noSmithyDocumentSerde
+}
+
+// The background of the image with regard to image quality and dominant colors.
+type DetectLabelsImageBackground struct {
+
+	// The dominant colors found in the background of an image, defined with RGB
+	// values, CSS color name, simplified color name, and PixelPercentage (the
+	// percentage of image pixels that have a particular color).
+	DominantColors []DominantColor
+
+	// The quality of the image background as defined by brightness and sharpness.
+	Quality *DetectLabelsImageQuality
+
+	noSmithyDocumentSerde
+}
+
+// The foreground of the image with regard to image quality and dominant colors.
+type DetectLabelsImageForeground struct {
+
+	// The dominant colors found in the foreground of an image, defined with RGB
+	// values, CSS color name, simplified color name, and PixelPercentage (the
+	// percentage of image pixels that have a particular color).
+	DominantColors []DominantColor
+
+	// The quality of the image foreground as defined by brightness and sharpness.
+	Quality *DetectLabelsImageQuality
+
+	noSmithyDocumentSerde
+}
+
+// Information about the quality and dominant colors of an input image. Quality
+// and color information is returned for the entire image, foreground, and
+// background.
+type DetectLabelsImageProperties struct {
+
+	// Information about the properties of an image’s background, including the
+	// background’s quality and dominant colors, including the quality and dominant
+	// colors of the image.
+	Background *DetectLabelsImageBackground
+
+	// Information about the dominant colors found in an image, described with RGB
+	// values, CSS color name, simplified color name, and PixelPercentage (the
+	// percentage of image pixels that have a particular color).
+	DominantColors []DominantColor
+
+	// Information about the properties of an image’s foreground, including the
+	// foreground’s quality and dominant colors, including the quality and dominant
+	// colors of the image.
+	Foreground *DetectLabelsImageForeground
+
+	// Information about the quality of the image foreground as defined by brightness,
+	// sharpness, and contrast. The higher the value the greater the brightness,
+	// sharpness, and contrast respectively.
+	Quality *DetectLabelsImageQuality
+
+	noSmithyDocumentSerde
+}
+
+// Settings for the IMAGE_PROPERTIES feature type.
+type DetectLabelsImagePropertiesSettings struct {
+
+	// The maximum number of dominant colors to return when detecting labels in an
+	// image. The default value is 10.
+	MaxDominantColors int32
+
+	noSmithyDocumentSerde
+}
+
+// The quality of an image provided for label detection, with regard to
+// brightness, sharpness, and contrast.
+type DetectLabelsImageQuality struct {
+
+	// The brightness of an image provided for label detection.
+	Brightness *float32
+
+	// The contrast of an image provided for label detection.
+	Contrast *float32
+
+	// The sharpness of an image provided for label detection.
+	Sharpness *float32
+
+	noSmithyDocumentSerde
+}
+
+// Settings for the DetectLabels request. Settings can include filters for both
+// GENERAL_LABELS and IMAGE_PROPERTIES. GENERAL_LABELS filters can be inclusive or
+// exclusive and applied to individual labels or label categories. IMAGE_PROPERTIES
+// filters allow specification of a maximum number of dominant colors.
+type DetectLabelsSettings struct {
+
+	// Contains the specified filters for GENERAL_LABELS.
+	GeneralLabels *GeneralLabelsSettings
+
+	// Contains the chosen number of maximum dominant colors in an image.
+	ImageProperties *DetectLabelsImagePropertiesSettings
+
+	noSmithyDocumentSerde
 }
 
 // A set of optional parameters that you can use to set the criteria that the text
@@ -259,13 +754,65 @@ type DetectionFilter struct {
 // of the image to look for text in.
 type DetectTextFilters struct {
 
-	// A Filter focusing on a certain area of the image. Uses a BoundingBox object to
+	//  A Filter focusing on a certain area of the image. Uses a BoundingBox object to
 	// set the region of the image.
 	RegionsOfInterest []RegionOfInterest
 
 	// A set of parameters that allow you to filter out certain results from your
 	// returned results.
 	WordFilter *DetectionFilter
+
+	noSmithyDocumentSerde
+}
+
+// Provides face metadata for the faces that are disassociated from a specific
+// UserID.
+type DisassociatedFace struct {
+
+	// Unique identifier assigned to the face.
+	FaceId *string
+
+	noSmithyDocumentSerde
+}
+
+//	A training dataset or a test dataset used in a dataset distribution operation.
+//
+// For more information, see DistributeDatasetEntries.
+type DistributeDataset struct {
+
+	// The Amazon Resource Name (ARN) of the dataset that you want to use.
+	//
+	// This member is required.
+	Arn *string
+
+	noSmithyDocumentSerde
+}
+
+// A description of the dominant colors in an image.
+type DominantColor struct {
+
+	// The Blue RGB value for a dominant color.
+	Blue *int32
+
+	// The CSS color name of a dominant color.
+	CSSColor *string
+
+	// The Green RGB value for a dominant color.
+	Green *int32
+
+	// The Hex code equivalent of the RGB values for a dominant color.
+	HexCode *string
+
+	// The percentage of image pixels that have a given dominant color.
+	PixelPercent *float32
+
+	// The Red RGB value for a dominant color.
+	Red *int32
+
+	// One of 12 simplified color names applied to a dominant color.
+	SimplifiedColor *string
+
+	noSmithyDocumentSerde
 }
 
 // The emotions that appear to be expressed on the face, and the confidence level
@@ -280,16 +827,18 @@ type Emotion struct {
 
 	// Type of emotion detected.
 	Type EmotionName
+
+	noSmithyDocumentSerde
 }
 
-// Information about an item of Personal Protective Equipment (PPE) detected by
-// DetectProtectiveEquipment. For more information, see DetectProtectiveEquipment.
+// Information about an item of Personal Protective Equipment (PPE) detected by DetectProtectiveEquipment.
+// For more information, see DetectProtectiveEquipment.
 type EquipmentDetection struct {
 
 	// A bounding box surrounding the item of detected PPE.
 	BoundingBox *BoundingBox
 
-	// The confidence that Amazon Rekognition has that the bounding box (BoundingBox)
+	// The confidence that Amazon Rekognition has that the bounding box ( BoundingBox )
 	// contains an item of PPE.
 	Confidence *float32
 
@@ -298,19 +847,39 @@ type EquipmentDetection struct {
 
 	// The type of detected PPE.
 	Type ProtectiveEquipmentType
+
+	noSmithyDocumentSerde
 }
 
 // The evaluation results for the training of a model.
 type EvaluationResult struct {
 
-	// The F1 score for the evaluation of all labels. The F1 score metric evaluates the
-	// overall precision and recall performance of the model as a single value. A
+	// The F1 score for the evaluation of all labels. The F1 score metric evaluates
+	// the overall precision and recall performance of the model as a single value. A
 	// higher value indicates better precision and recall performance. A lower score
 	// indicates that precision, recall, or both are performing poorly.
 	F1Score *float32
 
 	// The S3 bucket that contains the training summary.
 	Summary *Summary
+
+	noSmithyDocumentSerde
+}
+
+// Indicates the direction the eyes are gazing in (independent of the head pose)
+// as determined by its pitch and yaw.
+type EyeDirection struct {
+
+	// The confidence that the service has in its predicted eye direction.
+	Confidence *float32
+
+	// Value representing eye direction on the pitch axis.
+	Pitch *float32
+
+	// Value representing eye direction on the yaw axis.
+	Yaw *float32
+
+	noSmithyDocumentSerde
 }
 
 // Indicates whether or not the face is wearing eye glasses, and the confidence
@@ -322,10 +891,12 @@ type Eyeglasses struct {
 
 	// Boolean value that indicates whether the face is wearing eye glasses or not.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
-// Indicates whether or not the eyes on the face are open, and the confidence level
-// in the determination.
+// Indicates whether or not the eyes on the face are open, and the confidence
+// level in the determination.
 type EyeOpen struct {
 
 	// Level of confidence in the determination.
@@ -333,10 +904,12 @@ type EyeOpen struct {
 
 	// Boolean value that indicates whether the eyes on the face are open.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
-// Describes the face properties such as the bounding box, face ID, image ID of the
-// input image, and external image ID that you assigned.
+// Describes the face properties such as the bounding box, face ID, image ID of
+// the input image, and external image ID that you assigned.
 type Face struct {
 
 	// Bounding box of the face.
@@ -354,29 +927,38 @@ type Face struct {
 
 	// Unique identifier that Amazon Rekognition assigns to the input image.
 	ImageId *string
+
+	//  The version of the face detect and storage model that was used when indexing
+	// the face vector.
+	IndexFacesModelVersion *string
+
+	// Unique identifier assigned to the user.
+	UserId *string
+
+	noSmithyDocumentSerde
 }
 
-// Structure containing attributes of the face that the algorithm detected. A
-// FaceDetail object contains either the default facial attributes or all facial
-// attributes. The default attributes are BoundingBox, Confidence, Landmarks, Pose,
-// and Quality. GetFaceDetection is the only Amazon Rekognition Video stored video
-// operation that can return a FaceDetail object with all attributes. To specify
-// which attributes to return, use the FaceAttributes input parameter for
-// StartFaceDetection. The following Amazon Rekognition Video operations return
-// only the default attributes. The corresponding Start operations don't have a
-// FaceAttributes input parameter.
+// Structure containing attributes of the face that the algorithm detected.
 //
-// * GetCelebrityRecognition
+// A FaceDetail object contains either the default facial attributes or all facial
+// attributes. The default attributes are BoundingBox , Confidence , Landmarks ,
+// Pose , and Quality .
 //
-// *
-// GetPersonTracking
+// GetFaceDetectionis the only Amazon Rekognition Video stored video operation that can return a
+// FaceDetail object with all attributes. To specify which attributes to return,
+// use the FaceAttributes input parameter for StartFaceDetection. The following Amazon Rekognition
+// Video operations return only the default attributes. The corresponding Start
+// operations don't have a FaceAttributes input parameter:
 //
-// * GetFaceSearch
+//   - GetCelebrityRecognition
 //
-// The Amazon Rekognition Image DetectFaces and
-// IndexFaces operations can return all facial attributes. To specify which
-// attributes to return, use the Attributes input parameter for DetectFaces. For
-// IndexFaces, use the DetectAttributes input parameter.
+//   - GetPersonTracking
+//
+//   - GetFaceSearch
+//
+// The Amazon Rekognition Image DetectFaces and IndexFaces operations can return all facial attributes.
+// To specify which attributes to return, use the Attributes input parameter for
+// DetectFaces . For IndexFaces , use the DetectAttributes input parameter.
 type FaceDetail struct {
 
 	// The estimated age range, in years, for the face. Low represents the lowest
@@ -401,13 +983,24 @@ type FaceDetail struct {
 	// person pretending to have a sad face might not be sad emotionally.
 	Emotions []Emotion
 
+	// Indicates the direction the eyes are gazing in, as defined by pitch and yaw.
+	EyeDirection *EyeDirection
+
 	// Indicates whether or not the face is wearing eye glasses, and the confidence
 	// level in the determination.
 	Eyeglasses *Eyeglasses
 
-	// Indicates whether or not the eyes on the face are open, and the confidence level
-	// in the determination.
+	// Indicates whether or not the eyes on the face are open, and the confidence
+	// level in the determination.
 	EyesOpen *EyeOpen
+
+	// FaceOccluded should return "true" with a high confidence score if a detected
+	// face’s eyes, nose, and mouth are partially captured or if they are covered by
+	// masks, dark sunglasses, cell phones, hands, or other objects. FaceOccluded
+	// should return "false" with a high confidence score if common occurrences that do
+	// not impact face verification are detected, such as eye glasses, lightly tinted
+	// sunglasses, strands of hair, and others.
+	FaceOccluded *FaceOccluded
 
 	// The predicted gender of a detected face.
 	Gender *Gender
@@ -415,8 +1008,8 @@ type FaceDetail struct {
 	// Indicates the location of landmarks on the face. Default attribute.
 	Landmarks []Landmark
 
-	// Indicates whether or not the mouth on the face is open, and the confidence level
-	// in the determination.
+	// Indicates whether or not the mouth on the face is open, and the confidence
+	// level in the determination.
 	MouthOpen *MouthOpen
 
 	// Indicates whether or not the face has a mustache, and the confidence level in
@@ -437,6 +1030,8 @@ type FaceDetail struct {
 	// Indicates whether or not the face is wearing sunglasses, and the confidence
 	// level in the determination.
 	Sunglasses *Sunglasses
+
+	noSmithyDocumentSerde
 }
 
 // Information about a face detected in a video analysis request and the time the
@@ -447,58 +1042,97 @@ type FaceDetection struct {
 	Face *FaceDetail
 
 	// Time, in milliseconds from the start of the video, that the face was detected.
+	// Note that Timestamp is not guaranteed to be accurate to the individual frame
+	// where the face first appears.
 	Timestamp int64
+
+	noSmithyDocumentSerde
 }
 
 // Provides face metadata. In addition, it also provides the confidence in the
 // match of this face with the input face.
 type FaceMatch struct {
 
-	// Describes the face properties such as the bounding box, face ID, image ID of the
-	// source image, and external image ID that you assigned.
+	// Describes the face properties such as the bounding box, face ID, image ID of
+	// the source image, and external image ID that you assigned.
 	Face *Face
 
 	// Confidence in the match of this face with the input face.
 	Similarity *float32
+
+	noSmithyDocumentSerde
+}
+
+// FaceOccluded should return "true" with a high confidence score if a detected
+// face’s eyes, nose, and mouth are partially captured or if they are covered by
+// masks, dark sunglasses, cell phones, hands, or other objects. FaceOccluded
+// should return "false" with a high confidence score if common occurrences that do
+// not impact face verification are detected, such as eye glasses, lightly tinted
+// sunglasses, strands of hair, and others.
+//
+// You can use FaceOccluded to determine if an obstruction on a face negatively
+// impacts using the image for face matching.
+type FaceOccluded struct {
+
+	// The confidence that the service has detected the presence of a face occlusion.
+	Confidence *float32
+
+	// True if a detected face’s eyes, nose, and mouth are partially captured or if
+	// they are covered by masks, dark sunglasses, cell phones, hands, or other
+	// objects. False if common occurrences that do not impact face verification are
+	// detected, such as eye glasses, lightly tinted sunglasses, strands of hair, and
+	// others.
+	Value bool
+
+	noSmithyDocumentSerde
 }
 
 // Object containing both the face metadata (stored in the backend database), and
 // facial attributes that are detected but aren't stored in the database.
 type FaceRecord struct {
 
-	// Describes the face properties such as the bounding box, face ID, image ID of the
-	// input image, and external image ID that you assigned.
+	// Describes the face properties such as the bounding box, face ID, image ID of
+	// the input image, and external image ID that you assigned.
 	Face *Face
 
 	// Structure containing attributes of the face that the algorithm detected.
 	FaceDetail *FaceDetail
+
+	noSmithyDocumentSerde
 }
 
 // Input face recognition parameters for an Amazon Rekognition stream processor.
-// FaceRecognitionSettings is a request parameter for CreateStreamProcessor.
+// Includes the collection to use for face recognition and the face attributes to
+// detect. Defining the settings is required in the request parameter for CreateStreamProcessor.
 type FaceSearchSettings struct {
 
 	// The ID of a collection that contains faces that you want to search for.
 	CollectionId *string
 
 	// Minimum face match confidence score that must be met to return a result for a
-	// recognized face. Default is 80. 0 is the lowest confidence. 100 is the highest
-	// confidence.
+	// recognized face. The default is 80. 0 is the lowest confidence. 100 is the
+	// highest confidence. Values between 0 and 100 are accepted, and values lower than
+	// 80 are set to 80.
 	FaceMatchThreshold *float32
+
+	noSmithyDocumentSerde
 }
 
-// The predicted gender of a detected face. Amazon Rekognition makes gender binary
-// (male/female) predictions based on the physical appearance of a face in a
-// particular image. This kind of prediction is not designed to categorize a
-// person’s gender identity, and you shouldn't use Amazon Rekognition to make such
-// a determination. For example, a male actor wearing a long-haired wig and
-// earrings for a role might be predicted as female. Using Amazon Rekognition to
-// make gender binary predictions is best suited for use cases where aggregate
-// gender distribution statistics need to be analyzed without identifying specific
-// users. For example, the percentage of female users compared to male users on a
-// social media platform. We don't recommend using gender binary predictions to
-// make decisions that impact  an individual's rights, privacy, or access to
-// services.
+// The predicted gender of a detected face.
+//
+// Amazon Rekognition makes gender binary (male/female) predictions based on the
+// physical appearance of a face in a particular image. This kind of prediction is
+// not designed to categorize a person’s gender identity, and you shouldn't use
+// Amazon Rekognition to make such a determination. For example, a male actor
+// wearing a long-haired wig and earrings for a role might be predicted as female.
+//
+// Using Amazon Rekognition to make gender binary predictions is best suited for
+// use cases where aggregate gender distribution statistics need to be analyzed
+// without identifying specific users. For example, the percentage of female users
+// compared to male users on a social media platform.
+//
+// We don't recommend using gender binary predictions to make decisions that
+// impact an individual's rights, privacy, or access to services.
 type Gender struct {
 
 	// Level of confidence in the prediction.
@@ -506,10 +1140,33 @@ type Gender struct {
 
 	// The predicted gender of the face.
 	Value GenderType
+
+	noSmithyDocumentSerde
 }
 
-// Information about where an object (DetectCustomLabels) or text (DetectText) is
-// located on an image.
+// Contains filters for the object labels returned by DetectLabels. Filters can be
+// inclusive, exclusive, or a combination of both and can be applied to individual
+// labels or entire label categories. To see a list of label categories, see [Detecting Labels].
+//
+// [Detecting Labels]: https://docs.aws.amazon.com/rekognition/latest/dg/labels.html
+type GeneralLabelsSettings struct {
+
+	// The label categories that should be excluded from the return from DetectLabels.
+	LabelCategoryExclusionFilters []string
+
+	// The label categories that should be included in the return from DetectLabels.
+	LabelCategoryInclusionFilters []string
+
+	// The labels that should be excluded from the return from DetectLabels.
+	LabelExclusionFilters []string
+
+	// The labels that should be included in the return from DetectLabels.
+	LabelInclusionFilters []string
+
+	noSmithyDocumentSerde
+}
+
+// Information about where an object (DetectCustomLabels ) or text (DetectText ) is located on an image.
 type Geometry struct {
 
 	// An axis-aligned coarse representation of the detected item's location on the
@@ -518,18 +1175,51 @@ type Geometry struct {
 
 	// Within the bounding box, a fine-grained polygon around the detected item.
 	Polygon []Point
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata about a content moderation request, including the SortBy and
+// AggregateBy options.
+type GetContentModerationRequestMetadata struct {
+
+	// The aggregation method chosen for a GetContentModeration request.
+	AggregateBy ContentModerationAggregateBy
+
+	// The sorting method chosen for a GetContentModeration request.
+	SortBy ContentModerationSortBy
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata about a label detection request, including the SortBy and
+// AggregateBy options.
+type GetLabelDetectionRequestMetadata struct {
+
+	// The aggregation method chosen for a GetLabelDetection request.
+	AggregateBy LabelDetectionAggregateBy
+
+	// The sorting method chosen for a GetLabelDetection request.
+	SortBy LabelDetectionSortBy
+
+	noSmithyDocumentSerde
 }
 
 // The S3 bucket that contains an Amazon Sagemaker Ground Truth format manifest
 // file.
 type GroundTruthManifest struct {
 
-	// Provides the S3 bucket name and object name. The region for the S3 bucket
-	// containing the S3 object must match the region you use for Amazon Rekognition
-	// operations. For Amazon Rekognition to process an S3 object, the user must have
-	// permission to access the S3 object. For more information, see Resource-Based
-	// Policies in the Amazon Rekognition Developer Guide.
+	// Provides the S3 bucket name and object name.
+	//
+	// The region for the S3 bucket containing the S3 object must match the region you
+	// use for Amazon Rekognition operations.
+	//
+	// For Amazon Rekognition to process an S3 object, the user must have permission
+	// to access the S3 object. For more information, see How Amazon Rekognition works
+	// with IAM in the Amazon Rekognition Developer Guide.
 	S3Object *S3Object
+
+	noSmithyDocumentSerde
 }
 
 // Shows the results of the human in the loop evaluation. If there is no
@@ -547,6 +1237,8 @@ type HumanLoopActivationOutput struct {
 
 	// The Amazon Resource Name (ARN) of the HumanLoop created.
 	HumanLoopArn *string
+
+	noSmithyDocumentSerde
 }
 
 // Sets up the flow definition the image will be sent to if one of the conditions
@@ -554,9 +1246,9 @@ type HumanLoopActivationOutput struct {
 type HumanLoopConfig struct {
 
 	// The Amazon Resource Name (ARN) of the flow definition. You can create a flow
-	// definition by using the Amazon Sagemaker CreateFlowDefinition
-	// (https://docs.aws.amazon.com/sagemaker/latest/dg/API_CreateFlowDefinition.html)
-	// Operation.
+	// definition by using the Amazon Sagemaker [CreateFlowDefinition]Operation.
+	//
+	// [CreateFlowDefinition]: https://docs.aws.amazon.com/sagemaker/latest/dg/API_CreateFlowDefinition.html
 	//
 	// This member is required.
 	FlowDefinitionArn *string
@@ -569,6 +1261,8 @@ type HumanLoopConfig struct {
 
 	// Sets attributes of the input data.
 	DataAttributes *HumanLoopDataAttributes
+
+	noSmithyDocumentSerde
 }
 
 // Allows you to set attributes of the image. Currently, you can declare an image
@@ -577,48 +1271,63 @@ type HumanLoopDataAttributes struct {
 
 	// Sets whether the input image is free of personally identifiable information.
 	ContentClassifiers []ContentClassifier
+
+	noSmithyDocumentSerde
 }
 
-// Provides the input image either as bytes or an S3 object. You pass image bytes
-// to an Amazon Rekognition API operation by using the Bytes property. For example,
-// you would use the Bytes property to pass an image loaded from a local file
-// system. Image bytes passed by using the Bytes property must be base64-encoded.
-// Your code may not need to encode image bytes if you are using an AWS SDK to call
-// Amazon Rekognition API operations. For more information, see Analyzing an Image
-// Loaded from a Local File System in the Amazon Rekognition Developer Guide. You
-// pass images stored in an S3 bucket to an Amazon Rekognition API operation by
-// using the S3Object property. Images stored in an S3 bucket do not need to be
-// base64-encoded. The region for the S3 bucket containing the S3 object must match
-// the region you use for Amazon Rekognition operations. If you use the AWS CLI to
-// call Amazon Rekognition operations, passing image bytes using the Bytes property
-// is not supported. You must first upload the image to an Amazon S3 bucket and
-// then call the operation using the S3Object property. For Amazon Rekognition to
-// process an S3 object, the user must have permission to access the S3 object. For
-// more information, see Resource Based Policies in the Amazon Rekognition
-// Developer Guide.
+// Provides the input image either as bytes or an S3 object.
+//
+// You pass image bytes to an Amazon Rekognition API operation by using the Bytes
+// property. For example, you would use the Bytes property to pass an image loaded
+// from a local file system. Image bytes passed by using the Bytes property must
+// be base64-encoded. Your code may not need to encode image bytes if you are using
+// an AWS SDK to call Amazon Rekognition API operations.
+//
+// For more information, see Analyzing an Image Loaded from a Local File System in
+// the Amazon Rekognition Developer Guide.
+//
+// You pass images stored in an S3 bucket to an Amazon Rekognition API operation
+// by using the S3Object property. Images stored in an S3 bucket do not need to be
+// base64-encoded.
+//
+// The region for the S3 bucket containing the S3 object must match the region you
+// use for Amazon Rekognition operations.
+//
+// If you use the AWS CLI to call Amazon Rekognition operations, passing image
+// bytes using the Bytes property is not supported. You must first upload the image
+// to an Amazon S3 bucket and then call the operation using the S3Object property.
+//
+// For Amazon Rekognition to process an S3 object, the user must have permission
+// to access the S3 object. For more information, see How Amazon Rekognition works
+// with IAM in the Amazon Rekognition Developer Guide.
 type Image struct {
 
-	// Blob of image bytes up to 5 MBs.
+	// Blob of image bytes up to 5 MBs. Note that the maximum image size you can pass
+	// to DetectCustomLabels is 4MB.
 	Bytes []byte
 
 	// Identifies an S3 object as the image source.
 	S3Object *S3Object
+
+	noSmithyDocumentSerde
 }
 
 // Identifies face image brightness and sharpness.
 type ImageQuality struct {
 
-	// Value representing brightness of the face. The service returns a value between 0
-	// and 100 (inclusive). A higher value indicates a brighter face image.
+	// Value representing brightness of the face. The service returns a value between
+	// 0 and 100 (inclusive). A higher value indicates a brighter face image.
 	Brightness *float32
 
 	// Value representing sharpness of the face. The service returns a value between 0
 	// and 100 (inclusive). A higher value indicates a sharper face image.
 	Sharpness *float32
+
+	noSmithyDocumentSerde
 }
 
-// An instance of a label returned by Amazon Rekognition Image (DetectLabels) or by
-// Amazon Rekognition Video (GetLabelDetection).
+// An instance of a label returned by Amazon Rekognition Image (DetectLabels ) or by Amazon
+// Rekognition Video (GetLabelDetection ).
 type Instance struct {
 
 	// The position of the label instance on the image.
@@ -626,6 +1335,11 @@ type Instance struct {
 
 	// The confidence that Amazon Rekognition has in the accuracy of the bounding box.
 	Confidence *float32
+
+	// The dominant colors found in an individual instance of a label.
+	DominantColors []DominantColor
+
+	noSmithyDocumentSerde
 }
 
 // The Kinesis data stream Amazon Rekognition to which the analysis results of a
@@ -635,6 +1349,8 @@ type KinesisDataStream struct {
 
 	// ARN of the output Amazon Kinesis Data Streams stream.
 	Arn *string
+
+	noSmithyDocumentSerde
 }
 
 // Kinesis video stream stream that provides the source streaming video for a
@@ -644,11 +1360,49 @@ type KinesisVideoStream struct {
 
 	// ARN of the Kinesis video stream stream that streams the source video.
 	Arn *string
+
+	noSmithyDocumentSerde
+}
+
+// Specifies the starting point in a Kinesis stream to start processing. You can
+// use the producer timestamp or the fragment number. One of either producer
+// timestamp or fragment number is required. If you use the producer timestamp, you
+// must put the time in milliseconds. For more information about fragment numbers,
+// see [Fragment].
+//
+// [Fragment]: https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_reader_Fragment.html
+type KinesisVideoStreamStartSelector struct {
+
+	//  The unique identifier of the fragment. This value monotonically increases
+	// based on the ingestion order.
+	FragmentNumber *string
+
+	//  The timestamp from the producer corresponding to the fragment, in
+	// milliseconds, expressed in unix time format.
+	ProducerTimestamp *int64
+
+	noSmithyDocumentSerde
+}
+
+// The known gender identity for the celebrity that matches the provided ID. The
+// known gender identity can be Male, Female, Nonbinary, or Unlisted.
+type KnownGender struct {
+
+	// A string value of the KnownGender info about the Celebrity.
+	Type KnownGenderType
+
+	noSmithyDocumentSerde
 }
 
 // Structure containing details about the detected label, including the name,
 // detected instances, parent labels, and level of confidence.
 type Label struct {
+
+	// A list of potential aliases for a given label.
+	Aliases []LabelAlias
+
+	// A list of the categories associated with a given label.
+	Categories []LabelCategory
 
 	// Level of confidence.
 	Confidence *float32
@@ -663,17 +1417,67 @@ type Label struct {
 
 	// The parent labels for a label. The response includes all ancestor labels.
 	Parents []Parent
+
+	noSmithyDocumentSerde
+}
+
+// A potential alias of for a given label.
+type LabelAlias struct {
+
+	// The name of an alias for a given label.
+	Name *string
+
+	noSmithyDocumentSerde
+}
+
+// The category that applies to a given label.
+type LabelCategory struct {
+
+	// The name of a category that applies to a given label.
+	Name *string
+
+	noSmithyDocumentSerde
 }
 
 // Information about a label detected in a video analysis request and the time the
 // label was detected in the video.
 type LabelDetection struct {
 
+	// The time duration of a segment in milliseconds, I.e. time elapsed from
+	// StartTimestampMillis to EndTimestampMillis.
+	DurationMillis *int64
+
+	// The time in milliseconds defining the end of the timeline segment containing a
+	// continuously detected label.
+	EndTimestampMillis *int64
+
 	// Details about the detected label.
 	Label *Label
 
+	// The time in milliseconds defining the start of the timeline segment containing
+	// a continuously detected label.
+	StartTimestampMillis *int64
+
 	// Time, in milliseconds from the start of the video, that the label was detected.
+	// Note that Timestamp is not guaranteed to be accurate to the individual frame
+	// where the label first appears.
 	Timestamp int64
+
+	noSmithyDocumentSerde
+}
+
+// Contains the specified filters that should be applied to a list of returned
+// GENERAL_LABELS.
+type LabelDetectionSettings struct {
+
+	// Contains filters for the object labels returned by DetectLabels. Filters can be
+	// inclusive, exclusive, or a combination of both and can be applied to individual
+	// labels or entire label categories. To see a list of label categories, see [Detecting Labels].
+	//
+	// [Detecting Labels]: https://docs.aws.amazon.com/rekognition/latest/dg/labels.html
+	GeneralLabels *GeneralLabelsSettings
+
+	noSmithyDocumentSerde
 }
 
 // Indicates the location of the landmark on the face.
@@ -682,10 +1486,10 @@ type Landmark struct {
 	// Type of landmark.
 	Type LandmarkType
 
-	// The x-coordinate of the landmark expressed as a ratio of the width of the image.
-	// The x-coordinate is measured from the left-side of the image. For example, if
-	// the image is 700 pixels wide and the x-coordinate of the landmark is at 350
-	// pixels, this value is 0.5.
+	// The x-coordinate of the landmark expressed as a ratio of the width of the
+	// image. The x-coordinate is measured from the left-side of the image. For
+	// example, if the image is 700 pixels wide and the x-coordinate of the landmark is
+	// at 350 pixels, this value is 0.5.
 	X *float32
 
 	// The y-coordinate of the landmark expressed as a ratio of the height of the
@@ -693,30 +1497,241 @@ type Landmark struct {
 	// the image height is 200 pixels and the y-coordinate of the landmark is at 50
 	// pixels, this value is 0.25.
 	Y *float32
+
+	noSmithyDocumentSerde
 }
 
-// Provides information about a single type of unsafe content found in an image or
-// video. Each type of moderated content has a label within a hierarchical
-// taxonomy. For more information, see Detecting Unsafe Content in the Amazon
-// Rekognition Developer Guide.
+// Contains settings that specify the location of an Amazon S3 bucket used to
+// store the output of a Face Liveness session. Note that the S3 bucket must be
+// located in the caller's AWS account and in the same region as the Face Liveness
+// end-point. Additionally, the Amazon S3 object keys are auto-generated by the
+// Face Liveness system.
+type LivenessOutputConfig struct {
+
+	// The path to an AWS Amazon S3 bucket used to store Face Liveness session results.
+	//
+	// This member is required.
+	S3Bucket *string
+
+	// The prefix prepended to the output files for the Face Liveness session results.
+	S3KeyPrefix *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata for a UserID matched with a given face.
+type MatchedUser struct {
+
+	// A provided ID for the UserID. Unique within the collection.
+	UserId *string
+
+	// The status of the user matched to a provided FaceID.
+	UserStatus UserStatus
+
+	noSmithyDocumentSerde
+}
+
+// Configuration for Moderation Labels Detection.
+type MediaAnalysisDetectModerationLabelsConfig struct {
+
+	// Specifies the minimum confidence level for the moderation labels to return.
+	// Amazon Rekognition doesn't return any labels with a confidence level lower than
+	// this specified value.
+	MinConfidence *float32
+
+	// Specifies the custom moderation model to be used during the label detection
+	// job. If not provided the pre-trained model is used.
+	ProjectVersion *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains input information for a media analysis job.
+type MediaAnalysisInput struct {
+
+	// Provides the S3 bucket name and object name.
+	//
+	// The region for the S3 bucket containing the S3 object must match the region you
+	// use for Amazon Rekognition operations.
+	//
+	// For Amazon Rekognition to process an S3 object, the user must have permission
+	// to access the S3 object. For more information, see How Amazon Rekognition works
+	// with IAM in the Amazon Rekognition Developer Guide.
+	//
+	// This member is required.
+	S3Object *S3Object
+
+	noSmithyDocumentSerde
+}
+
+// Description for a media analysis job.
+type MediaAnalysisJobDescription struct {
+
+	// The Unix date and time when the job was started.
+	//
+	// This member is required.
+	CreationTimestamp *time.Time
+
+	// Reference to the input manifest that was provided in the job creation request.
+	//
+	// This member is required.
+	Input *MediaAnalysisInput
+
+	// The identifier for a media analysis job.
+	//
+	// This member is required.
+	JobId *string
+
+	// Operation configurations that were provided during job creation.
+	//
+	// This member is required.
+	OperationsConfig *MediaAnalysisOperationsConfig
+
+	// Output configuration that was provided in the creation request.
+	//
+	// This member is required.
+	OutputConfig *MediaAnalysisOutputConfig
+
+	// The status of the media analysis job being retrieved.
+	//
+	// This member is required.
+	Status MediaAnalysisJobStatus
+
+	// The Unix date and time when the job finished.
+	CompletionTimestamp *time.Time
+
+	// Details about the error that resulted in failure of the job.
+	FailureDetails *MediaAnalysisJobFailureDetails
+
+	// The name of a media analysis job.
+	JobName *string
+
+	// KMS Key that was provided in the creation request.
+	KmsKeyId *string
+
+	// Provides statistics on input manifest and errors identified in the input
+	// manifest.
+	ManifestSummary *MediaAnalysisManifestSummary
+
+	// Output manifest that contains prediction results.
+	Results *MediaAnalysisResults
+
+	noSmithyDocumentSerde
+}
+
+// Details about the error that resulted in failure of the job.
+type MediaAnalysisJobFailureDetails struct {
+
+	// Error code for the failed job.
+	Code MediaAnalysisJobFailureCode
+
+	// Human readable error message.
+	Message *string
+
+	noSmithyDocumentSerde
+}
+
+// Summary that provides statistics on input manifest and errors identified in the
+// input manifest.
+type MediaAnalysisManifestSummary struct {
+
+	// Provides the S3 bucket name and object name.
+	//
+	// The region for the S3 bucket containing the S3 object must match the region you
+	// use for Amazon Rekognition operations.
+	//
+	// For Amazon Rekognition to process an S3 object, the user must have permission
+	// to access the S3 object. For more information, see How Amazon Rekognition works
+	// with IAM in the Amazon Rekognition Developer Guide.
+	S3Object *S3Object
+
+	noSmithyDocumentSerde
+}
+
+// Object containing information about the model versions of selected features in
+// a given job.
+type MediaAnalysisModelVersions struct {
+
+	// The Moderation base model version.
+	Moderation *string
+
+	noSmithyDocumentSerde
+}
+
+// Configuration options for a media analysis job. Configuration is
+// operation-specific.
+type MediaAnalysisOperationsConfig struct {
+
+	// Contains configuration options for a DetectModerationLabels job.
+	DetectModerationLabels *MediaAnalysisDetectModerationLabelsConfig
+
+	noSmithyDocumentSerde
+}
+
+// Output configuration provided in the job creation request.
+type MediaAnalysisOutputConfig struct {
+
+	// Specifies the Amazon S3 bucket to contain the output of the media analysis job.
+	//
+	// This member is required.
+	S3Bucket *string
+
+	// Specifies the Amazon S3 key prefix that comes after the name of the bucket you
+	// have designated for storage.
+	S3KeyPrefix *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains the results for a media analysis job created with
+// StartMediaAnalysisJob.
+type MediaAnalysisResults struct {
+
+	// Information about the model versions for the features selected in a given job.
+	ModelVersions *MediaAnalysisModelVersions
+
+	// Provides the S3 bucket name and object name.
+	//
+	// The region for the S3 bucket containing the S3 object must match the region you
+	// use for Amazon Rekognition operations.
+	//
+	// For Amazon Rekognition to process an S3 object, the user must have permission
+	// to access the S3 object. For more information, see How Amazon Rekognition works
+	// with IAM in the Amazon Rekognition Developer Guide.
+	S3Object *S3Object
+
+	noSmithyDocumentSerde
+}
+
+// Provides information about a single type of inappropriate, unwanted, or
+// offensive content found in an image or video. Each type of moderated content has
+// a label within a hierarchical taxonomy. For more information, see Content
+// moderation in the Amazon Rekognition Developer Guide.
 type ModerationLabel struct {
 
 	// Specifies the confidence that Amazon Rekognition has that the label has been
-	// correctly identified. If you don't specify the MinConfidence parameter in the
-	// call to DetectModerationLabels, the operation returns labels with a confidence
-	// value greater than or equal to 50 percent.
+	// correctly identified.
+	//
+	// If you don't specify the MinConfidence parameter in the call to
+	// DetectModerationLabels , the operation returns labels with a confidence value
+	// greater than or equal to 50 percent.
 	Confidence *float32
 
 	// The label name for the type of unsafe content detected in the image.
 	Name *string
 
-	// The name for the parent label. Labels at the top level of the hierarchy have the
-	// parent label "".
+	// The name for the parent label. Labels at the top level of the hierarchy have
+	// the parent label "" .
 	ParentName *string
+
+	// The level of the moderation label with regard to its taxonomy, from 1 to 3.
+	TaxonomyLevel *int32
+
+	noSmithyDocumentSerde
 }
 
-// Indicates whether or not the mouth on the face is open, and the confidence level
-// in the determination.
+// Indicates whether or not the mouth on the face is open, and the confidence
+// level in the determination.
 type MouthOpen struct {
 
 	// Level of confidence in the determination.
@@ -724,6 +1739,8 @@ type MouthOpen struct {
 
 	// Boolean value that indicates whether the mouth on the face is open or not.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
 // Indicates whether or not the face has a mustache, and the confidence level in
@@ -735,11 +1752,18 @@ type Mustache struct {
 
 	// Boolean value that indicates whether the face has mustache or not.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
 // The Amazon Simple Notification Service topic to which Amazon Rekognition
 // publishes the completion status of a video analysis operation. For more
-// information, see api-video.
+// information, see [Calling Amazon Rekognition Video operations]. Note that the Amazon SNS topic must have a topic name that
+// begins with AmazonRekognition if you are using the AmazonRekognitionServiceRole
+// permissions policy to access the topic. For more information, see [Giving access to multiple Amazon SNS topics].
+//
+// [Calling Amazon Rekognition Video operations]: https://docs.aws.amazon.com/rekognition/latest/dg/api-video.html
+// [Giving access to multiple Amazon SNS topics]: https://docs.aws.amazon.com/rekognition/latest/dg/api-video-roles.html#api-video-roles-all-topics
 type NotificationChannel struct {
 
 	// The ARN of an IAM role that gives Amazon Rekognition publishing permissions to
@@ -748,10 +1772,12 @@ type NotificationChannel struct {
 	// This member is required.
 	RoleArn *string
 
-	// The Amazon SNS topic to which Amazon Rekognition to posts the completion status.
+	// The Amazon SNS topic to which Amazon Rekognition posts the completion status.
 	//
 	// This member is required.
 	SNSTopicArn *string
+
+	noSmithyDocumentSerde
 }
 
 // The S3 bucket and folder location where training output is placed.
@@ -762,6 +1788,8 @@ type OutputConfig struct {
 
 	// The prefix applied to the training output files.
 	S3KeyPrefix *string
+
+	noSmithyDocumentSerde
 }
 
 // A parent label for a label. A label can have 0, 1, or more parents.
@@ -769,6 +1797,8 @@ type Parent struct {
 
 	// The name of the parent label.
 	Name *string
+
+	noSmithyDocumentSerde
 }
 
 // Details about a person detected in a video analysis request.
@@ -784,28 +1814,35 @@ type PersonDetail struct {
 	// the person throughout the video. The identifier is not stored by Amazon
 	// Rekognition.
 	Index int64
+
+	noSmithyDocumentSerde
 }
 
 // Details and path tracking information for a single time a person's path is
 // tracked in a video. Amazon Rekognition operations that track people's paths
 // return an array of PersonDetection objects with elements for each time a
-// person's path is tracked in a video. For more information, see GetPersonTracking
-// in the Amazon Rekognition Developer Guide.
+// person's path is tracked in a video.
+//
+// For more information, see GetPersonTracking in the Amazon Rekognition Developer
+// Guide.
 type PersonDetection struct {
 
 	// Details about a person whose path was tracked in a video.
 	Person *PersonDetail
 
 	// The time, in milliseconds from the start of the video, that the person's path
-	// was tracked.
+	// was tracked. Note that Timestamp is not guaranteed to be accurate to the
+	// individual frame where the person's path first appears.
 	Timestamp int64
+
+	noSmithyDocumentSerde
 }
 
-// Information about a person whose face matches a face(s) in an Amazon Rekognition
-// collection. Includes information about the faces in the Amazon Rekognition
-// collection (FaceMatch), information about the person (PersonDetail), and the
-// time stamp for when the person was detected in a video. An array of PersonMatch
-// objects is returned by GetFaceSearch.
+// Information about a person whose face matches a face(s) in an Amazon
+// Rekognition collection. Includes information about the faces in the Amazon
+// Rekognition collection (FaceMatch ), information about the person (PersonDetail ), and the time stamp
+// for when the person was detected in a video. An array of PersonMatch objects is
+// returned by GetFaceSearch.
 type PersonMatch struct {
 
 	// Information about the faces in the input collection that match the face of a
@@ -818,22 +1855,27 @@ type PersonMatch struct {
 	// The time, in milliseconds from the beginning of the video, that the person was
 	// matched in the video.
 	Timestamp int64
+
+	noSmithyDocumentSerde
 }
 
-// The X and Y coordinates of a point on an image. The X and Y values returned are
-// ratios of the overall image size. For example, if the input image is 700x200 and
-// the operation returns X=0.5 and Y=0.25, then the point is at the (350,50) pixel
-// coordinate on the image. An array of Point objects, Polygon, is returned by
-// DetectText and by DetectCustomLabels. Polygon represents a fine-grained polygon
-// around a detected item. For more information, see Geometry in the Amazon
-// Rekognition Developer Guide.
+// The X and Y coordinates of a point on an image or video frame. The X and Y
+// values are ratios of the overall image size or video resolution. For example, if
+// an input image is 700x200 and the values are X=0.5 and Y=0.25, then the point is
+// at the (350,50) pixel coordinate on the image.
+//
+// An array of Point objects makes up a Polygon . A Polygon is returned by DetectText and by DetectCustomLabels
+// Polygon represents a fine-grained polygon around a detected item. For more
+// information, see Geometry in the Amazon Rekognition Developer Guide.
 type Point struct {
 
-	// The value of the X coordinate for a point on a Polygon.
+	// The value of the X coordinate for a point on a Polygon .
 	X *float32
 
-	// The value of the Y coordinate for a point on a Polygon.
+	// The value of the Y coordinate for a point on a Polygon .
 	Y *float32
+
+	noSmithyDocumentSerde
 }
 
 // Indicates the pose of the face as determined by its pitch, roll, and yaw.
@@ -847,26 +1889,70 @@ type Pose struct {
 
 	// Value representing the face rotation on the yaw axis.
 	Yaw *float32
+
+	noSmithyDocumentSerde
 }
 
-// A description of a Amazon Rekognition Custom Labels project.
+// A description of an Amazon Rekognition Custom Labels project. For more
+// information, see DescribeProjects.
 type ProjectDescription struct {
+
+	// Indicates whether automatic retraining will be attempted for the versions of
+	// the project. Applies only to adapters.
+	AutoUpdate ProjectAutoUpdate
 
 	// The Unix timestamp for the date and time that the project was created.
 	CreationTimestamp *time.Time
+
+	//  Information about the training and test datasets in the project.
+	Datasets []DatasetMetadata
+
+	// Specifies the project that is being customized.
+	Feature CustomizationFeature
 
 	// The Amazon Resource Name (ARN) of the project.
 	ProjectArn *string
 
 	// The current status of the project.
 	Status ProjectStatus
+
+	noSmithyDocumentSerde
 }
 
-// The description of a version of a model.
+// Describes a project policy in the response from ListProjectPolicies.
+type ProjectPolicy struct {
+
+	// The Unix datetime for the creation of the project policy.
+	CreationTimestamp *time.Time
+
+	// The Unix datetime for when the project policy was last updated.
+	LastUpdatedTimestamp *time.Time
+
+	// The JSON document for the project policy.
+	PolicyDocument *string
+
+	// The name of the project policy.
+	PolicyName *string
+
+	// The revision ID of the project policy.
+	PolicyRevisionId *string
+
+	// The Amazon Resource Name (ARN) of the project to which the project policy is
+	// attached.
+	ProjectArn *string
+
+	noSmithyDocumentSerde
+}
+
+// A description of a version of a Amazon Rekognition project version.
 type ProjectVersionDescription struct {
 
-	// The duration, in seconds, that the model version has been billed for training.
-	// This value is only returned if the model version has been successfully trained.
+	// The base detection model version used to create the project version.
+	BaseModelVersion *string
+
+	// The duration, in seconds, that you were billed for a successful training of the
+	// model version. This value is only returned if the model version has been
+	// successfully trained.
 	BillableTrainingTimeInSeconds *int64
 
 	// The Unix datetime for the date and time that training started.
@@ -876,19 +1962,37 @@ type ProjectVersionDescription struct {
 	// successful.
 	EvaluationResult *EvaluationResult
 
+	// The feature that was customized.
+	Feature CustomizationFeature
+
+	// Feature specific configuration that was applied during training.
+	FeatureConfig *CustomizationFeatureConfig
+
+	// The identifer for the AWS Key Management Service key (AWS KMS key) that was
+	// used to encrypt the model during training.
+	KmsKeyId *string
+
 	// The location of the summary manifest. The summary manifest provides aggregate
 	// data validation results for the training and test datasets.
 	ManifestSummary *GroundTruthManifest
 
-	// The minimum number of inference units used by the model. For more information,
-	// see StartProjectVersion.
+	// The maximum number of inference units Amazon Rekognition uses to auto-scale the
+	// model. Applies only to Custom Labels projects. For more information, see StartProjectVersion.
+	MaxInferenceUnits *int32
+
+	// The minimum number of inference units used by the model. Applies only to Custom
+	// Labels projects. For more information, see StartProjectVersion.
 	MinInferenceUnits *int32
 
 	// The location where training results are saved.
 	OutputConfig *OutputConfig
 
-	// The Amazon Resource Name (ARN) of the model version.
+	// The Amazon Resource Name (ARN) of the project version.
 	ProjectVersionArn *string
+
+	// If the model version was copied from a different project,
+	// SourceProjectVersionArn contains the ARN of the source model version.
+	SourceProjectVersionArn *string
 
 	// The current status of the model version.
 	Status ProjectVersionStatus
@@ -904,11 +2008,16 @@ type ProjectVersionDescription struct {
 
 	// The Unix date and time that training of the model ended.
 	TrainingEndTimestamp *time.Time
+
+	// A user-provided description of the project version.
+	VersionDescription *string
+
+	noSmithyDocumentSerde
 }
 
-// Information about a body part detected by DetectProtectiveEquipment that
-// contains PPE. An array of ProtectiveEquipmentBodyPart objects is returned for
-// each person detected by DetectProtectiveEquipment.
+// Information about a body part detected by DetectProtectiveEquipment that contains PPE. An array of
+// ProtectiveEquipmentBodyPart objects is returned for each person detected by
+// DetectProtectiveEquipment .
 type ProtectiveEquipmentBodyPart struct {
 
 	// The confidence that Amazon Rekognition has in the detection accuracy of the
@@ -920,15 +2029,16 @@ type ProtectiveEquipmentBodyPart struct {
 
 	// The detected body part.
 	Name BodyPart
+
+	noSmithyDocumentSerde
 }
 
-// A person detected by a call to DetectProtectiveEquipment. The API returns all
-// persons detected in the input image in an array of ProtectiveEquipmentPerson
-// objects.
+// A person detected by a call to DetectProtectiveEquipment. The API returns all persons detected in the
+// input image in an array of ProtectiveEquipmentPerson objects.
 type ProtectiveEquipmentPerson struct {
 
-	// An array of body parts detected on a person's body (including body parts without
-	// PPE).
+	// An array of body parts detected on a person's body (including body parts
+	// without PPE).
 	BodyParts []ProtectiveEquipmentBodyPart
 
 	// A bounding box around the detected person.
@@ -939,26 +2049,28 @@ type ProtectiveEquipmentPerson struct {
 	Confidence *float32
 
 	// The identifier for the detected person. The identifier is only unique for a
-	// single call to DetectProtectiveEquipment.
+	// single call to DetectProtectiveEquipment .
 	Id *int32
+
+	noSmithyDocumentSerde
 }
 
-// Specifies summary attributes to return from a call to DetectProtectiveEquipment.
-// You can specify which types of PPE to summarize. You can also specify a minimum
-// confidence value for detections. Summary information is returned in the Summary
-// (ProtectiveEquipmentSummary) field of the response from
-// DetectProtectiveEquipment. The summary includes which persons in an image were
-// detected wearing the requested types of person protective equipment (PPE), which
-// persons were detected as not wearing PPE, and the persons in which a
-// determination could not be made. For more information, see
-// ProtectiveEquipmentSummary.
+// Specifies summary attributes to return from a call to DetectProtectiveEquipment. You can specify which
+// types of PPE to summarize. You can also specify a minimum confidence value for
+// detections. Summary information is returned in the Summary (ProtectiveEquipmentSummary ) field of the
+// response from DetectProtectiveEquipment . The summary includes which persons in
+// an image were detected wearing the requested types of person protective
+// equipment (PPE), which persons were detected as not wearing PPE, and the persons
+// in which a determination could not be made. For more information, see ProtectiveEquipmentSummary.
 type ProtectiveEquipmentSummarizationAttributes struct {
 
 	// The minimum confidence level for which you want summary information. The
 	// confidence level applies to person detection, body part detection, equipment
 	// detection, and body part coverage. Amazon Rekognition doesn't return summary
 	// information with a confidence than this specified value. There isn't a default
-	// value. Specify a MinConfidence value that is between 50-100% as
+	// value.
+	//
+	// Specify a MinConfidence value that is between 50-100% as
 	// DetectProtectiveEquipment returns predictions only where the detection
 	// confidence is between 50% - 100%. If you specify a value that is less than 50%,
 	// the results are the same specifying a value of 50%.
@@ -968,28 +2080,29 @@ type ProtectiveEquipmentSummarizationAttributes struct {
 
 	// An array of personal protective equipment types for which you want summary
 	// information. If a person is detected wearing a required requipment type, the
-	// person's ID is added to the PersonsWithRequiredEquipment array field returned in
-	// ProtectiveEquipmentSummary by DetectProtectiveEquipment.
+	// person's ID is added to the PersonsWithRequiredEquipment array field returned
+	// in ProtectiveEquipmentSummaryby DetectProtectiveEquipment .
 	//
 	// This member is required.
 	RequiredEquipmentTypes []ProtectiveEquipmentType
+
+	noSmithyDocumentSerde
 }
 
 // Summary information for required items of personal protective equipment (PPE)
-// detected on persons by a call to DetectProtectiveEquipment. You specify the
-// required type of PPE in the SummarizationAttributes
-// (ProtectiveEquipmentSummarizationAttributes) input parameter. The summary
-// includes which persons were detected wearing the required personal protective
-// equipment (PersonsWithRequiredEquipment), which persons were detected as not
-// wearing the required PPE (PersonsWithoutRequiredEquipment), and the persons in
-// which a determination could not be made (PersonsIndeterminate). To get a total
-// for each category, use the size of the field array. For example, to find out how
-// many people were detected as wearing the specified PPE, use the size of the
-// PersonsWithRequiredEquipment array. If you want to find out more about a person,
-// such as the location (BoundingBox) of the person on the image, use the person ID
-// in each array element. Each person ID matches the ID field of a
-// ProtectiveEquipmentPerson object returned in the Persons array by
-// DetectProtectiveEquipment.
+// detected on persons by a call to DetectProtectiveEquipment. You specify the required type of PPE in the
+// SummarizationAttributes (ProtectiveEquipmentSummarizationAttributes ) input parameter. The summary includes which persons
+// were detected wearing the required personal protective equipment (
+// PersonsWithRequiredEquipment ), which persons were detected as not wearing the
+// required PPE ( PersonsWithoutRequiredEquipment ), and the persons in which a
+// determination could not be made ( PersonsIndeterminate ).
+//
+// To get a total for each category, use the size of the field array. For example,
+// to find out how many people were detected as wearing the specified PPE, use the
+// size of the PersonsWithRequiredEquipment array. If you want to find out more
+// about a person, such as the location (BoundingBox ) of the person on the image, use the
+// person ID in each array element. Each person ID matches the ID field of a ProtectiveEquipmentPerson
+// object returned in the Persons array by DetectProtectiveEquipment .
 type ProtectiveEquipmentSummary struct {
 
 	// An array of IDs for persons where it was not possible to determine if they are
@@ -1004,24 +2117,59 @@ type ProtectiveEquipmentSummary struct {
 	// specified in the RequiredEquipmentTypes field of the detected personal
 	// protective equipment.
 	PersonsWithoutRequiredEquipment []int32
+
+	noSmithyDocumentSerde
 }
 
-// Specifies a location within the frame that Rekognition checks for text. Uses a
-// BoundingBox object to set a region of the screen. A word is included in the
-// region if the word is more than half in that region. If there is more than one
-// region, the word will be compared with all regions of the screen. Any word more
+// Specifies a location within the frame that Rekognition checks for objects of
+// interest such as text, labels, or faces. It uses a BoundingBox or Polygon to
+// set a region of the screen.
+//
+// A word, face, or label is included in the region if it is more than half in
+// that region. If there is more than one region, the word, face, or label is
+// compared with all regions of the screen. Any object of interest that is more
 // than half in a region is kept in the results.
 type RegionOfInterest struct {
 
 	// The box representing a region of interest on screen.
 	BoundingBox *BoundingBox
+
+	//  Specifies a shape made up of up to 10 Point objects to define a region of
+	// interest.
+	Polygon []Point
+
+	noSmithyDocumentSerde
 }
 
-// Provides the S3 bucket name and object name. The region for the S3 bucket
-// containing the S3 object must match the region you use for Amazon Rekognition
-// operations. For Amazon Rekognition to process an S3 object, the user must have
-// permission to access the S3 object. For more information, see Resource-Based
-// Policies in the Amazon Rekognition Developer Guide.
+//	The Amazon S3 bucket location to which Amazon Rekognition publishes the
+//
+// detailed inference results of a video analysis operation. These results include
+// the name of the stream processor resource, the session ID of the stream
+// processing session, and labeled timestamps and bounding boxes for detected
+// labels.
+type S3Destination struct {
+
+	//  The name of the Amazon S3 bucket you want to associate with the streaming
+	// video project. You must be the owner of the Amazon S3 bucket.
+	Bucket *string
+
+	//  The prefix value of the location within the bucket that you want the
+	// information to be published to. For more information, see [Using prefixes].
+	//
+	// [Using prefixes]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-prefixes.html
+	KeyPrefix *string
+
+	noSmithyDocumentSerde
+}
+
+// Provides the S3 bucket name and object name.
+//
+// The region for the S3 bucket containing the S3 object must match the region you
+// use for Amazon Rekognition operations.
+//
+// For Amazon Rekognition to process an S3 object, the user must have permission
+// to access the S3 object. For more information, see How Amazon Rekognition works
+// with IAM in the Amazon Rekognition Developer Guide.
 type S3Object struct {
 
 	// Name of the S3 bucket.
@@ -1032,6 +2180,56 @@ type S3Object struct {
 
 	// If the bucket is versioning enabled, you can specify the object version.
 	Version *string
+
+	noSmithyDocumentSerde
+}
+
+// Provides face metadata such as FaceId, BoundingBox, Confidence of the input
+// face used for search.
+type SearchedFace struct {
+
+	//  Unique identifier assigned to the face.
+	FaceId *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains data regarding the input face used for a search.
+type SearchedFaceDetails struct {
+
+	// Structure containing attributes of the face that the algorithm detected.
+	//
+	// A FaceDetail object contains either the default facial attributes or all facial
+	// attributes. The default attributes are BoundingBox , Confidence , Landmarks ,
+	// Pose , and Quality .
+	//
+	// GetFaceDetectionis the only Amazon Rekognition Video stored video operation that can return a
+	// FaceDetail object with all attributes. To specify which attributes to return,
+	// use the FaceAttributes input parameter for StartFaceDetection. The following Amazon Rekognition
+	// Video operations return only the default attributes. The corresponding Start
+	// operations don't have a FaceAttributes input parameter:
+	//
+	//   - GetCelebrityRecognition
+	//
+	//   - GetPersonTracking
+	//
+	//   - GetFaceSearch
+	//
+	// The Amazon Rekognition Image DetectFaces and IndexFaces operations can return all facial attributes.
+	// To specify which attributes to return, use the Attributes input parameter for
+	// DetectFaces . For IndexFaces , use the DetectAttributes input parameter.
+	FaceDetail *FaceDetail
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata about a User searched for within a collection.
+type SearchedUser struct {
+
+	//  A provided ID for the UserID. Unique within the collection.
+	UserId *string
+
+	noSmithyDocumentSerde
 }
 
 // A technical cue or shot detection segment detected in a video. An array of
@@ -1039,11 +2237,18 @@ type S3Object struct {
 // returned by GetSegmentDetection.
 type SegmentDetection struct {
 
+	//  The duration of a video segment, expressed in frames.
+	DurationFrames *int64
+
 	// The duration of the detected segment in milliseconds.
 	DurationMillis *int64
 
 	// The duration of the timecode for the detected segment in SMPTE format.
 	DurationSMPTE *string
+
+	//  The frame number at the end of a video segment, using a frame index that
+	// starts with 0.
+	EndFrameNumber *int64
 
 	// The frame-accurate SMPTE timecode, from the start of a video, for the end of a
 	// detected segment. EndTimecode is in HH:MM:SS:fr format (and ;fr for drop
@@ -1058,8 +2263,12 @@ type SegmentDetection struct {
 	// detection.
 	ShotSegment *ShotSegment
 
-	// The frame-accurate SMPTE timecode, from the start of a video, for the start of a
-	// detected segment. StartTimecode is in HH:MM:SS:fr format (and ;fr for drop
+	//  The frame number of the start of a video segment, using a frame index that
+	// starts with 0.
+	StartFrameNumber *int64
+
+	// The frame-accurate SMPTE timecode, from the start of a video, for the start of
+	// a detected segment. StartTimecode is in HH:MM:SS:fr format (and ;fr for drop
 	// frame-rates).
 	StartTimecodeSMPTE *string
 
@@ -1071,13 +2280,14 @@ type SegmentDetection struct {
 	// If the segment is a technical cue, contains information about the technical cue.
 	TechnicalCueSegment *TechnicalCueSegment
 
-	// The type of the segment. Valid values are TECHNICAL_CUE and SHOT.
+	// The type of the segment. Valid values are TECHNICAL_CUE and SHOT .
 	Type SegmentType
+
+	noSmithyDocumentSerde
 }
 
-// Information about the type of a segment requested in a call to
-// StartSegmentDetection. An array of SegmentTypeInfo objects is returned by the
-// response from GetSegmentDetection.
+// Information about the type of a segment requested in a call to StartSegmentDetection. An array of
+// SegmentTypeInfo objects is returned by the response from GetSegmentDetection.
 type SegmentTypeInfo struct {
 
 	// The version of the model used to detect segments.
@@ -1085,18 +2295,22 @@ type SegmentTypeInfo struct {
 
 	// The type of a segment (technical cue or shot detection).
 	Type SegmentType
+
+	noSmithyDocumentSerde
 }
 
 // Information about a shot detection segment detected in a video. For more
 // information, see SegmentDetection.
 type ShotSegment struct {
 
-	// The confidence that Amazon Rekognition Video has in the accuracy of the detected
-	// segment.
+	// The confidence that Amazon Rekognition Video has in the accuracy of the
+	// detected segment.
 	Confidence *float32
 
 	// An Identifier for a shot detection segment detected in a video.
 	Index *int64
+
+	noSmithyDocumentSerde
 }
 
 // Indicates whether or not the face is smiling, and the confidence level in the
@@ -1108,6 +2322,8 @@ type Smile struct {
 
 	// Boolean value that indicates whether the face is smiling or not.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
 // Filters applied to the technical cue or shot detection segments. For more
@@ -1119,9 +2335,11 @@ type StartSegmentDetectionFilters struct {
 
 	// Filters that are specific to technical cues.
 	TechnicalCueFilter *StartTechnicalCueDetectionFilter
+
+	noSmithyDocumentSerde
 }
 
-// Filters for the shot detection segments returned by GetSegmentDetection. For
+// Filters for the shot detection segments returned by GetSegmentDetection . For
 // more information, see StartSegmentDetectionFilters.
 type StartShotDetectionFilter struct {
 
@@ -1129,24 +2347,35 @@ type StartShotDetectionFilter struct {
 	// order to return a detected segment. Confidence represents how certain Amazon
 	// Rekognition is that a segment is correctly identified. 0 is the lowest
 	// confidence. 100 is the highest confidence. Amazon Rekognition Video doesn't
-	// return any segments with a confidence level lower than this specified value. If
-	// you don't specify MinSegmentConfidence, the GetSegmentDetection returns segments
-	// with confidence values greater than or equal to 50 percent.
+	// return any segments with a confidence level lower than this specified value.
+	//
+	// If you don't specify MinSegmentConfidence , the GetSegmentDetection returns
+	// segments with confidence values greater than or equal to 50 percent.
 	MinSegmentConfidence *float32
+
+	noSmithyDocumentSerde
 }
 
-// Filters for the technical segments returned by GetSegmentDetection. For more
-// information, see StartSegmentDetectionFilters.
+// Filters for the technical segments returned by GetSegmentDetection. For more information, see StartSegmentDetectionFilters.
 type StartTechnicalCueDetectionFilter struct {
+
+	//  A filter that allows you to control the black frame detection by specifying
+	// the black levels and pixel coverage of black pixels in a frame. Videos can come
+	// from multiple sources, formats, and time periods, with different standards and
+	// varying noise levels for black frames that need to be accounted for.
+	BlackFrame *BlackFrame
 
 	// Specifies the minimum confidence that Amazon Rekognition Video must have in
 	// order to return a detected segment. Confidence represents how certain Amazon
 	// Rekognition is that a segment is correctly identified. 0 is the lowest
 	// confidence. 100 is the highest confidence. Amazon Rekognition Video doesn't
-	// return any segments with a confidence level lower than this specified value. If
-	// you don't specify MinSegmentConfidence, GetSegmentDetection returns segments
-	// with confidence values greater than or equal to 50 percent.
+	// return any segments with a confidence level lower than this specified value.
+	//
+	// If you don't specify MinSegmentConfidence , GetSegmentDetection returns
+	// segments with confidence values greater than or equal to 50 percent.
 	MinSegmentConfidence *float32
+
+	noSmithyDocumentSerde
 }
 
 // Set of optional parameters that let you set the criteria text must meet to be
@@ -1155,19 +2384,44 @@ type StartTechnicalCueDetectionFilter struct {
 // screen to look for text in.
 type StartTextDetectionFilters struct {
 
-	// Filter focusing on a certain area of the frame. Uses a BoundingBox object to set
-	// the region of the screen.
+	// Filter focusing on a certain area of the frame. Uses a BoundingBox object to
+	// set the region of the screen.
 	RegionsOfInterest []RegionOfInterest
 
 	// Filters focusing on qualities of the text, such as confidence or size.
 	WordFilter *DetectionFilter
+
+	noSmithyDocumentSerde
 }
 
-// An object that recognizes faces in a streaming video. An Amazon Rekognition
-// stream processor is created by a call to CreateStreamProcessor. The request
-// parameters for CreateStreamProcessor describe the Kinesis video stream source
-// for the streaming video, face recognition parameters, and where to stream the
-// analysis resullts.
+// This is a required parameter for label detection stream processors and should
+// not be used to start a face search stream processor.
+type StreamProcessingStartSelector struct {
+
+	//  Specifies the starting point in the stream to start processing. This can be
+	// done with a producer timestamp or a fragment number in a Kinesis stream.
+	KVSStreamStartSelector *KinesisVideoStreamStartSelector
+
+	noSmithyDocumentSerde
+}
+
+//	Specifies when to stop processing the stream. You can specify a maximum amount
+//
+// of time to process the video.
+type StreamProcessingStopSelector struct {
+
+	//  Specifies the maximum amount of time in seconds that you want the stream to be
+	// processed. The largest amount of time is 2 minutes. The default is 10 seconds.
+	MaxDurationInSeconds *int64
+
+	noSmithyDocumentSerde
+}
+
+// An object that recognizes faces or labels in a streaming video. An Amazon
+// Rekognition stream processor is created by a call to CreateStreamProcessor. The request parameters
+// for CreateStreamProcessor describe the Kinesis video stream source for the
+// streaming video, face recognition parameters, and where to stream the analysis
+// resullts.
 type StreamProcessor struct {
 
 	// Name of the Amazon Rekognition stream processor.
@@ -1175,6 +2429,24 @@ type StreamProcessor struct {
 
 	// Current status of the Amazon Rekognition stream processor.
 	Status StreamProcessorStatus
+
+	noSmithyDocumentSerde
+}
+
+//	Allows you to opt in or opt out to share data with Rekognition to improve
+//
+// model performance. You can choose this option at the account level or on a
+// per-stream basis. Note that if you opt out at the account level this setting is
+// ignored on individual streams.
+type StreamProcessorDataSharingPreference struct {
+
+	//  If this option is set to true, you choose to share data with Rekognition to
+	// improve model performance.
+	//
+	// This member is required.
+	OptIn bool
+
+	noSmithyDocumentSerde
 }
 
 // Information about the source streaming video.
@@ -1182,6 +2454,31 @@ type StreamProcessorInput struct {
 
 	// The Kinesis video stream input stream for the source streaming video.
 	KinesisVideoStream *KinesisVideoStream
+
+	noSmithyDocumentSerde
+}
+
+// The Amazon Simple Notification Service topic to which Amazon Rekognition
+// publishes the object detection results and completion status of a video analysis
+// operation.
+//
+// Amazon Rekognition publishes a notification the first time an object of
+// interest or a person is detected in the video stream. For example, if Amazon
+// Rekognition detects a person at second 2, a pet at second 4, and a person again
+// at second 5, Amazon Rekognition sends 2 object class detected notifications, one
+// for a person at second 2 and one for a pet at second 4.
+//
+// Amazon Rekognition also publishes an an end-of-session notification with a
+// summary when the stream processing session is complete.
+type StreamProcessorNotificationChannel struct {
+
+	//  The Amazon Resource Number (ARN) of the Amazon Amazon Simple Notification
+	// Service topic to which Amazon Rekognition posts the completion status.
+	//
+	// This member is required.
+	SNSTopicArn *string
+
+	noSmithyDocumentSerde
 }
 
 // Information about the Amazon Kinesis Data Streams stream to which a Amazon
@@ -1193,28 +2490,65 @@ type StreamProcessorOutput struct {
 	// The Amazon Kinesis Data Streams stream to which the Amazon Rekognition stream
 	// processor streams the analysis results.
 	KinesisDataStream *KinesisDataStream
+
+	//  The Amazon S3 bucket location to which Amazon Rekognition publishes the
+	// detailed inference results of a video analysis operation.
+	S3Destination *S3Destination
+
+	noSmithyDocumentSerde
 }
 
-// Input parameters used to recognize faces in a streaming video analyzed by a
-// Amazon Rekognition stream processor.
+// Input parameters used in a streaming video analyzed by a Amazon Rekognition
+// stream processor. You can use FaceSearch to recognize faces in a streaming
+// video, or you can use ConnectedHome to detect labels.
 type StreamProcessorSettings struct {
+
+	//  Label detection settings to use on a streaming video. Defining the settings is
+	// required in the request parameter for CreateStreamProcessor. Including this setting in the
+	// CreateStreamProcessor request enables you to use the stream processor for label
+	// detection. You can then select what you want the stream processor to detect,
+	// such as people or pets. When the stream processor has started, one notification
+	// is sent for each object class specified. For example, if packages and pets are
+	// selected, one SNS notification is published the first time a package is detected
+	// and one SNS notification is published the first time a pet is detected, as well
+	// as an end-of-session summary.
+	ConnectedHome *ConnectedHomeSettings
 
 	// Face search settings to use on a streaming video.
 	FaceSearch *FaceSearchSettings
+
+	noSmithyDocumentSerde
+}
+
+//	The stream processor settings that you want to update. ConnectedHome settings
+//
+// can be updated to detect different labels with a different minimum confidence.
+type StreamProcessorSettingsForUpdate struct {
+
+	//  The label detection settings you want to use for your stream processor.
+	ConnectedHomeForUpdate *ConnectedHomeSettingsForUpdate
+
+	noSmithyDocumentSerde
 }
 
 // The S3 bucket that contains the training summary. The training summary includes
 // aggregated evaluation metrics for the entire testing dataset and metrics for
-// each individual label. You get the training summary S3 bucket location by
-// calling DescribeProjectVersions.
+// each individual label.
+//
+// You get the training summary S3 bucket location by calling DescribeProjectVersions.
 type Summary struct {
 
-	// Provides the S3 bucket name and object name. The region for the S3 bucket
-	// containing the S3 object must match the region you use for Amazon Rekognition
-	// operations. For Amazon Rekognition to process an S3 object, the user must have
-	// permission to access the S3 object. For more information, see Resource-Based
-	// Policies in the Amazon Rekognition Developer Guide.
+	// Provides the S3 bucket name and object name.
+	//
+	// The region for the S3 bucket containing the S3 object must match the region you
+	// use for Amazon Rekognition operations.
+	//
+	// For Amazon Rekognition to process an S3 object, the user must have permission
+	// to access the S3 object. For more information, see How Amazon Rekognition works
+	// with IAM in the Amazon Rekognition Developer Guide.
 	S3Object *S3Object
+
+	noSmithyDocumentSerde
 }
 
 // Indicates whether or not the face is wearing sunglasses, and the confidence
@@ -1226,35 +2560,40 @@ type Sunglasses struct {
 
 	// Boolean value that indicates whether the face is wearing sunglasses or not.
 	Value bool
+
+	noSmithyDocumentSerde
 }
 
-// Information about a technical cue segment. For more information, see
-// SegmentDetection.
+// Information about a technical cue segment. For more information, see SegmentDetection.
 type TechnicalCueSegment struct {
 
-	// The confidence that Amazon Rekognition Video has in the accuracy of the detected
-	// segment.
+	// The confidence that Amazon Rekognition Video has in the accuracy of the
+	// detected segment.
 	Confidence *float32
 
 	// The type of the technical cue.
 	Type TechnicalCueType
+
+	noSmithyDocumentSerde
 }
 
 // The dataset used for testing. Optionally, if AutoCreate is set, Amazon
-// Rekognition Custom Labels creates a testing dataset using an 80/20 split of the
-// training dataset.
+// Rekognition uses the training dataset to create a test dataset with a temporary
+// split of the training dataset.
 type TestingData struct {
 
 	// The assets used for testing.
 	Assets []Asset
 
-	// If specified, Amazon Rekognition Custom Labels creates a testing dataset with an
-	// 80/20 split of the training dataset.
+	// If specified, Rekognition splits training dataset to create a test dataset for
+	// the training job.
 	AutoCreate bool
+
+	noSmithyDocumentSerde
 }
 
-// Sagemaker Groundtruth format manifest files for the input, output and validation
-// datasets that are used and created during testing.
+// Sagemaker Groundtruth format manifest files for the input, output and
+// validation datasets that are used and created during testing.
 type TestingDataResult struct {
 
 	// The testing dataset that was supplied for training.
@@ -1267,15 +2606,22 @@ type TestingDataResult struct {
 	// The location of the data validation manifest. The data validation manifest is
 	// created for the test dataset during model training.
 	Validation *ValidationData
+
+	noSmithyDocumentSerde
 }
 
-// Information about a word or line of text detected by DetectText. The
-// DetectedText field contains the text that Amazon Rekognition detected in the
-// image. Every word and line has an identifier (Id). Each word belongs to a line
-// and has a parent identifier (ParentId) that identifies the line of text in which
+// Information about a word or line of text detected by DetectText.
+//
+// The DetectedText field contains the text that Amazon Rekognition detected in
+// the image.
+//
+// Every word and line has an identifier ( Id ). Each word belongs to a line and
+// has a parent identifier ( ParentId ) that identifies the line of text in which
 // the word appears. The word Id is also an index for the word within a line of
-// words. For more information, see Detecting Text in the Amazon Rekognition
-// Developer Guide.
+// words.
+//
+// For more information, see Detecting text in the Amazon Rekognition Developer
+// Guide.
 type TextDetection struct {
 
 	// The confidence that Amazon Rekognition has in the accuracy of the detected text
@@ -1290,16 +2636,18 @@ type TextDetection struct {
 	// spatial information.
 	Geometry *Geometry
 
-	// The identifier for the detected text. The identifier is only unique for a single
-	// call to DetectText.
+	// The identifier for the detected text. The identifier is only unique for a
+	// single call to DetectText .
 	Id *int32
 
-	// The Parent identifier for the detected text identified by the value of ID. If
-	// the type of detected text is LINE, the value of ParentId is Null.
+	// The Parent identifier for the detected text identified by the value of ID . If
+	// the type of detected text is LINE , the value of ParentId is Null .
 	ParentId *int32
 
 	// The type of text that was detected.
 	Type TextTypes
+
+	noSmithyDocumentSerde
 }
 
 // Information about text detected in a video. Incudes the detected text, the time
@@ -1311,88 +2659,209 @@ type TextDetectionResult struct {
 	TextDetection *TextDetection
 
 	// The time, in milliseconds from the start of the video, that the text was
-	// detected.
+	// detected. Note that Timestamp is not guaranteed to be accurate to the
+	// individual frame where the text first appears.
 	Timestamp int64
+
+	noSmithyDocumentSerde
 }
 
 // The dataset used for training.
 type TrainingData struct {
 
-	// A Sagemaker GroundTruth manifest file that contains the training images
-	// (assets).
+	// A manifest file that contains references to the training images and
+	// ground-truth annotations.
 	Assets []Asset
+
+	noSmithyDocumentSerde
 }
 
-// Sagemaker Groundtruth format manifest files for the input, output and validation
-// datasets that are used and created during testing.
+// The data validation manifest created for the training dataset during model
+// training.
 type TrainingDataResult struct {
 
-	// The training assets that you supplied for training.
+	// The training data that you supplied.
 	Input *TrainingData
 
-	// The images (assets) that were actually trained by Amazon Rekognition Custom
-	// Labels.
+	// Reference to images (assets) that were actually used during training with
+	// trained model predictions.
 	Output *TrainingData
 
-	// The location of the data validation manifest. The data validation manifest is
-	// created for the training dataset during model training.
+	// A manifest that you supplied for training, with validation results for each
+	// line.
 	Validation *ValidationData
+
+	noSmithyDocumentSerde
 }
 
-// A face that IndexFaces detected, but didn't index. Use the Reasons response
-// attribute to determine why a face wasn't indexed.
+// A face that IndexFaces detected, but didn't index. Use the Reasons response attribute to
+// determine why a face wasn't indexed.
 type UnindexedFace struct {
 
-	// The structure that contains attributes of a face that IndexFacesdetected, but
+	// The structure that contains attributes of a face that IndexFaces detected, but
 	// didn't index.
 	FaceDetail *FaceDetail
 
 	// An array of reasons that specify why a face wasn't indexed.
 	//
-	// * EXTREME_POSE -
-	// The face is at a pose that can't be detected. For example, the head is turned
-	// too far away from the camera.
+	//   - EXTREME_POSE - The face is at a pose that can't be detected. For example,
+	//   the head is turned too far away from the camera.
 	//
-	// * EXCEEDS_MAX_FACES - The number of faces
-	// detected is already higher than that specified by the MaxFaces input parameter
-	// for IndexFaces.
+	//   - EXCEEDS_MAX_FACES - The number of faces detected is already higher than
+	//   that specified by the MaxFaces input parameter for IndexFaces .
 	//
-	// * LOW_BRIGHTNESS - The image is too dark.
+	//   - LOW_BRIGHTNESS - The image is too dark.
 	//
-	// * LOW_SHARPNESS -
-	// The image is too blurry.
+	//   - LOW_SHARPNESS - The image is too blurry.
 	//
-	// * LOW_CONFIDENCE - The face was detected with a low
-	// confidence.
+	//   - LOW_CONFIDENCE - The face was detected with a low confidence.
 	//
-	// * SMALL_BOUNDING_BOX - The bounding box around the face is too
-	// small.
+	//   - SMALL_BOUNDING_BOX - The bounding box around the face is too small.
 	Reasons []Reason
+
+	noSmithyDocumentSerde
+}
+
+// Face details inferred from the image but not used for search. The response
+// attribute contains reasons for why a face wasn't used for Search.
+type UnsearchedFace struct {
+
+	// Structure containing attributes of the face that the algorithm detected.
+	//
+	// A FaceDetail object contains either the default facial attributes or all facial
+	// attributes. The default attributes are BoundingBox , Confidence , Landmarks ,
+	// Pose , and Quality .
+	//
+	// GetFaceDetectionis the only Amazon Rekognition Video stored video operation that can return a
+	// FaceDetail object with all attributes. To specify which attributes to return,
+	// use the FaceAttributes input parameter for StartFaceDetection. The following Amazon Rekognition
+	// Video operations return only the default attributes. The corresponding Start
+	// operations don't have a FaceAttributes input parameter:
+	//
+	//   - GetCelebrityRecognition
+	//
+	//   - GetPersonTracking
+	//
+	//   - GetFaceSearch
+	//
+	// The Amazon Rekognition Image DetectFaces and IndexFaces operations can return all facial attributes.
+	// To specify which attributes to return, use the Attributes input parameter for
+	// DetectFaces . For IndexFaces , use the DetectAttributes input parameter.
+	FaceDetails *FaceDetail
+
+	//  Reasons why a face wasn't used for Search.
+	Reasons []UnsearchedFaceReason
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata like FaceId, UserID, and Reasons, for a face that was
+// unsuccessfully associated.
+type UnsuccessfulFaceAssociation struct {
+
+	// Match confidence with the UserID, provides information regarding if a face
+	// association was unsuccessful because it didn't meet UserMatchThreshold.
+	Confidence *float32
+
+	// A unique identifier assigned to the face.
+	FaceId *string
+
+	//  The reason why the association was unsuccessful.
+	Reasons []UnsuccessfulFaceAssociationReason
+
+	// A provided ID for the UserID. Unique within the collection.
+	UserId *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata like FaceId, UserID, and Reasons, for a face that was
+// unsuccessfully deleted.
+type UnsuccessfulFaceDeletion struct {
+
+	//  A unique identifier assigned to the face.
+	FaceId *string
+
+	// The reason why the deletion was unsuccessful.
+	Reasons []UnsuccessfulFaceDeletionReason
+
+	//  A provided ID for the UserID. Unique within the collection.
+	UserId *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains metadata like FaceId, UserID, and Reasons, for a face that was
+// unsuccessfully disassociated.
+type UnsuccessfulFaceDisassociation struct {
+
+	// A unique identifier assigned to the face.
+	FaceId *string
+
+	// The reason why the deletion was unsuccessful.
+	Reasons []UnsuccessfulFaceDisassociationReason
+
+	// A provided ID for the UserID. Unique within the collection.
+	UserId *string
+
+	noSmithyDocumentSerde
+}
+
+// Metadata of the user stored in a collection.
+type User struct {
+
+	//  A provided ID for the User. Unique within the collection.
+	UserId *string
+
+	//  Communicates if the UserID has been updated with latest set of faces to be
+	// associated with the UserID.
+	UserStatus UserStatus
+
+	noSmithyDocumentSerde
+}
+
+// Provides UserID metadata along with the confidence in the match of this UserID
+// with the input face.
+type UserMatch struct {
+
+	//  Describes the UserID metadata.
+	Similarity *float32
+
+	//  Confidence in the match of this UserID with the input face.
+	User *MatchedUser
+
+	noSmithyDocumentSerde
 }
 
 // Contains the Amazon S3 bucket location of the validation data for a model
-// training job. The validation data includes error information for individual JSON
-// lines in the dataset.
+// training job.
 //
-// For more information, see Debugging a Failed Model
-// Training in the Amazon Rekognition Custom Labels Developer Guide. You get the
-// ValidationData object for the training dataset (TrainingDataResult) and the test
-// dataset (TestingDataResult) by calling DescribeProjectVersions. The assets array
-// contains a single Asset object. The GroundTruthManifest field of the Asset
-// object contains the S3 bucket location of the validation data.
+// The validation data includes error information for individual JSON Lines in the
+// dataset. For more information, see Debugging a Failed Model Training in the
+// Amazon Rekognition Custom Labels Developer Guide.
+//
+// You get the ValidationData object for the training dataset (TrainingDataResult ) and the test
+// dataset (TestingDataResult ) by calling DescribeProjectVersions.
+//
+// The assets array contains a single Asset object. The GroundTruthManifest field of the Asset object
+// contains the S3 bucket location of the validation data.
 type ValidationData struct {
 
 	// The assets that comprise the validation data.
 	Assets []Asset
+
+	noSmithyDocumentSerde
 }
 
 // Video file stored in an Amazon S3 bucket. Amazon Rekognition video start
-// operations such as StartLabelDetection use Video to specify a video for
-// analysis. The supported file formats are .mp4, .mov and .avi.
+// operations such as StartLabelDetectionuse Video to specify a video for analysis. The supported
+// file formats are .mp4, .mov and .avi.
 type Video struct {
 
 	// The Amazon S3 bucket name and file name for the video.
 	S3Object *S3Object
+
+	noSmithyDocumentSerde
 }
 
 // Information about a video that Amazon Rekognition analyzed. Videometadata is
@@ -1402,6 +2871,10 @@ type VideoMetadata struct {
 
 	// Type of compression used in the analyzed video.
 	Codec *string
+
+	//  A description of the range of luminance values in a video, either LIMITED (16
+	// to 235) or FULL (0 to 255).
+	ColorRange VideoColorRange
 
 	// Length of the video in milliseconds.
 	DurationMillis *int64
@@ -1417,4 +2890,8 @@ type VideoMetadata struct {
 
 	// Horizontal pixel dimension of the video.
 	FrameWidth *int64
+
+	noSmithyDocumentSerde
 }
+
+type noSmithyDocumentSerde = smithydocument.NoSerde

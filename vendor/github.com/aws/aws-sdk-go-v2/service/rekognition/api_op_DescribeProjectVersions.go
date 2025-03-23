@@ -6,26 +6,28 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithytime "github.com/aws/smithy-go/time"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	smithywaiter "github.com/aws/smithy-go/waiter"
-	"github.com/jmespath/go-jmespath"
+	jmespath "github.com/jmespath/go-jmespath"
 	"time"
 )
 
-// Lists and describes the models in an Amazon Rekognition Custom Labels project.
-// You can specify up to 10 model versions in ProjectVersionArns. If you don't
-// specify a value, descriptions for all models are returned. This operation
-// requires permissions to perform the rekognition:DescribeProjectVersions action.
+// Lists and describes the versions of an Amazon Rekognition project. You can
+// specify up to 10 model or adapter versions in ProjectVersionArns . If you don't
+// specify a value, descriptions for all model/adapter versions in the project are
+// returned.
+//
+// This operation requires permissions to perform the
+// rekognition:DescribeProjectVersions action.
 func (c *Client) DescribeProjectVersions(ctx context.Context, params *DescribeProjectVersionsInput, optFns ...func(*Options)) (*DescribeProjectVersionsOutput, error) {
 	if params == nil {
 		params = &DescribeProjectVersionsInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DescribeProjectVersions", params, optFns, addOperationDescribeProjectVersionsMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DescribeProjectVersions", params, optFns, c.addOperationDescribeProjectVersionsMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +39,8 @@ func (c *Client) DescribeProjectVersions(ctx context.Context, params *DescribePr
 
 type DescribeProjectVersionsInput struct {
 
-	// The Amazon Resource Name (ARN) of the project that contains the models you want
-	// to describe.
+	// The Amazon Resource Name (ARN) of the project that contains the model/adapter
+	// you want to describe.
 	//
 	// This member is required.
 	ProjectArn *string
@@ -49,35 +51,43 @@ type DescribeProjectVersionsInput struct {
 	MaxResults *int32
 
 	// If the previous response was incomplete (because there is more results to
-	// retrieve), Amazon Rekognition Custom Labels returns a pagination token in the
-	// response. You can use this pagination token to retrieve the next set of results.
+	// retrieve), Amazon Rekognition returns a pagination token in the response. You
+	// can use this pagination token to retrieve the next set of results.
 	NextToken *string
 
-	// A list of model version names that you want to describe. You can add up to 10
-	// model version names to the list. If you don't specify a value, all model
-	// descriptions are returned. A version name is part of a model (ProjectVersion)
-	// ARN. For example, my-model.2020-01-21T09.10.15 is the version name in the
-	// following ARN.
-	// arn:aws:rekognition:us-east-1:123456789012:project/getting-started/version/my-model.2020-01-21T09.10.15/1234567890123.
+	// A list of model or project version names that you want to describe. You can add
+	// up to 10 model or project version names to the list. If you don't specify a
+	// value, all project version descriptions are returned. A version name is part of
+	// a project version ARN. For example, my-model.2020-01-21T09.10.15 is the version
+	// name in the following ARN.
+	// arn:aws:rekognition:us-east-1:123456789012:project/getting-started/version/my-model.2020-01-21T09.10.15/1234567890123
+	// .
 	VersionNames []string
+
+	noSmithyDocumentSerde
 }
 
 type DescribeProjectVersionsOutput struct {
 
 	// If the previous response was incomplete (because there is more results to
-	// retrieve), Amazon Rekognition Custom Labels returns a pagination token in the
-	// response. You can use this pagination token to retrieve the next set of results.
+	// retrieve), Amazon Rekognition returns a pagination token in the response. You
+	// can use this pagination token to retrieve the next set of results.
 	NextToken *string
 
-	// A list of model descriptions. The list is sorted by the creation date and time
-	// of the model versions, latest to earliest.
+	// A list of project version descriptions. The list is sorted by the creation date
+	// and time of the project versions, latest to earliest.
 	ProjectVersionDescriptions []types.ProjectVersionDescription
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDescribeProjectVersionsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDescribeProjectVersionsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpDescribeProjectVersions{}, middleware.After)
 	if err != nil {
 		return err
@@ -86,34 +96,38 @@ func addOperationDescribeProjectVersionsMiddlewares(stack *middleware.Stack, opt
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DescribeProjectVersions"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -122,10 +136,22 @@ func addOperationDescribeProjectVersionsMiddlewares(stack *middleware.Stack, opt
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeProjectVersionsValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeProjectVersions(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -137,97 +163,10 @@ func addOperationDescribeProjectVersionsMiddlewares(stack *middleware.Stack, opt
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
-}
-
-// DescribeProjectVersionsAPIClient is a client that implements the
-// DescribeProjectVersions operation.
-type DescribeProjectVersionsAPIClient interface {
-	DescribeProjectVersions(context.Context, *DescribeProjectVersionsInput, ...func(*Options)) (*DescribeProjectVersionsOutput, error)
-}
-
-var _ DescribeProjectVersionsAPIClient = (*Client)(nil)
-
-// DescribeProjectVersionsPaginatorOptions is the paginator options for
-// DescribeProjectVersions
-type DescribeProjectVersionsPaginatorOptions struct {
-	// The maximum number of results to return per paginated call. The largest value
-	// you can specify is 100. If you specify a value greater than 100, a
-	// ValidationException error occurs. The default value is 100.
-	Limit int32
-
-	// Set to true if pagination should stop if the service returns a pagination token
-	// that matches the most recent token provided to the service.
-	StopOnDuplicateToken bool
-}
-
-// DescribeProjectVersionsPaginator is a paginator for DescribeProjectVersions
-type DescribeProjectVersionsPaginator struct {
-	options   DescribeProjectVersionsPaginatorOptions
-	client    DescribeProjectVersionsAPIClient
-	params    *DescribeProjectVersionsInput
-	nextToken *string
-	firstPage bool
-}
-
-// NewDescribeProjectVersionsPaginator returns a new
-// DescribeProjectVersionsPaginator
-func NewDescribeProjectVersionsPaginator(client DescribeProjectVersionsAPIClient, params *DescribeProjectVersionsInput, optFns ...func(*DescribeProjectVersionsPaginatorOptions)) *DescribeProjectVersionsPaginator {
-	if params == nil {
-		params = &DescribeProjectVersionsInput{}
-	}
-
-	options := DescribeProjectVersionsPaginatorOptions{}
-	if params.MaxResults != nil {
-		options.Limit = *params.MaxResults
-	}
-
-	for _, fn := range optFns {
-		fn(&options)
-	}
-
-	return &DescribeProjectVersionsPaginator{
-		options:   options,
-		client:    client,
-		params:    params,
-		firstPage: true,
-	}
-}
-
-// HasMorePages returns a boolean indicating whether more pages are available
-func (p *DescribeProjectVersionsPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
-}
-
-// NextPage retrieves the next DescribeProjectVersions page.
-func (p *DescribeProjectVersionsPaginator) NextPage(ctx context.Context, optFns ...func(*Options)) (*DescribeProjectVersionsOutput, error) {
-	if !p.HasMorePages() {
-		return nil, fmt.Errorf("no more pages available")
-	}
-
-	params := *p.params
-	params.NextToken = p.nextToken
-
-	var limit *int32
-	if p.options.Limit > 0 {
-		limit = &p.options.Limit
-	}
-	params.MaxResults = limit
-
-	result, err := p.client.DescribeProjectVersions(ctx, &params, optFns...)
-	if err != nil {
-		return nil, err
-	}
-	p.firstPage = false
-
-	prevToken := p.nextToken
-	p.nextToken = result.NextToken
-
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
-		p.nextToken = nil
-	}
-
-	return result, nil
 }
 
 // ProjectVersionRunningWaiterOptions are waiter options for
@@ -237,16 +176,26 @@ type ProjectVersionRunningWaiterOptions struct {
 	// Set of options to modify how an operation is invoked. These apply to all
 	// operations invoked for this client. Use functional options on operation call to
 	// modify this list for per operation behavior.
+	//
+	// Passing options here is functionally equivalent to passing values to this
+	// config's ClientOptions field that extend the inner client's APIOptions directly.
 	APIOptions []func(*middleware.Stack) error
+
+	// Functional options to be passed to all operations invoked by this client.
+	//
+	// Function values that modify the inner APIOptions are applied after the waiter
+	// config's own APIOptions modifiers.
+	ClientOptions []func(*Options)
 
 	// MinDelay is the minimum amount of time to delay between retries. If unset,
 	// ProjectVersionRunningWaiter will use default minimum delay of 30 seconds. Note
 	// that MinDelay must resolve to a value lesser than or equal to the MaxDelay.
 	MinDelay time.Duration
 
-	// MaxDelay is the maximum amount of time to delay between retries. If unset or set
-	// to zero, ProjectVersionRunningWaiter will use default max delay of 120 seconds.
-	// Note that MaxDelay must resolve to value greater than or equal to the MinDelay.
+	// MaxDelay is the maximum amount of time to delay between retries. If unset or
+	// set to zero, ProjectVersionRunningWaiter will use default max delay of 120
+	// seconds. Note that MaxDelay must resolve to value greater than or equal to the
+	// MinDelay.
 	MaxDelay time.Duration
 
 	// LogWaitAttempts is used to enable logging for waiter retry attempts
@@ -254,12 +203,13 @@ type ProjectVersionRunningWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *DescribeProjectVersionsInput, *DescribeProjectVersionsOutput, error) (bool, error)
 }
 
@@ -290,8 +240,17 @@ func NewProjectVersionRunningWaiter(client DescribeProjectVersionsAPIClient, opt
 // is the maximum wait duration the waiter will wait. The maxWaitDur is required
 // and must be greater than zero.
 func (w *ProjectVersionRunningWaiter) Wait(ctx context.Context, params *DescribeProjectVersionsInput, maxWaitDur time.Duration, optFns ...func(*ProjectVersionRunningWaiterOptions)) error {
+	_, err := w.WaitForOutput(ctx, params, maxWaitDur, optFns...)
+	return err
+}
+
+// WaitForOutput calls the waiter function for ProjectVersionRunning waiter and
+// returns the output of the successful operation. The maxWaitDur is the maximum
+// wait duration the waiter will wait. The maxWaitDur is required and must be
+// greater than zero.
+func (w *ProjectVersionRunningWaiter) WaitForOutput(ctx context.Context, params *DescribeProjectVersionsInput, maxWaitDur time.Duration, optFns ...func(*ProjectVersionRunningWaiterOptions)) (*DescribeProjectVersionsOutput, error) {
 	if maxWaitDur <= 0 {
-		return fmt.Errorf("maximum wait time for waiter must be greater than zero")
+		return nil, fmt.Errorf("maximum wait time for waiter must be greater than zero")
 	}
 
 	options := w.options
@@ -304,7 +263,7 @@ func (w *ProjectVersionRunningWaiter) Wait(ctx context.Context, params *Describe
 	}
 
 	if options.MinDelay > options.MaxDelay {
-		return fmt.Errorf("minimum waiter delay %v must be lesser than or equal to maximum waiter delay of %v.", options.MinDelay, options.MaxDelay)
+		return nil, fmt.Errorf("minimum waiter delay %v must be lesser than or equal to maximum waiter delay of %v.", options.MinDelay, options.MaxDelay)
 	}
 
 	ctx, cancelFn := context.WithTimeout(ctx, maxWaitDur)
@@ -327,15 +286,24 @@ func (w *ProjectVersionRunningWaiter) Wait(ctx context.Context, params *Describe
 		}
 
 		out, err := w.client.DescribeProjectVersions(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
+			for _, opt := range options.ClientOptions {
+				opt(o)
+			}
 		})
 
 		retryable, err := options.Retryable(ctx, params, out, err)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !retryable {
-			return nil
+			return out, nil
 		}
 
 		remainingTime -= time.Since(start)
@@ -348,16 +316,16 @@ func (w *ProjectVersionRunningWaiter) Wait(ctx context.Context, params *Describe
 			attempt, options.MinDelay, options.MaxDelay, remainingTime,
 		)
 		if err != nil {
-			return fmt.Errorf("error computing waiter delay, %w", err)
+			return nil, fmt.Errorf("error computing waiter delay, %w", err)
 		}
 
 		remainingTime -= delay
 		// sleep for the delay amount before invoking a request
 		if err := smithytime.SleepWithContext(ctx, delay); err != nil {
-			return fmt.Errorf("request cancelled while waiting, %w", err)
+			return nil, fmt.Errorf("request cancelled while waiting, %w", err)
 		}
 	}
-	return fmt.Errorf("exceeded max wait time for ProjectVersionRunning waiter")
+	return nil, fmt.Errorf("exceeded max wait time for ProjectVersionRunning waiter")
 }
 
 func projectVersionRunningStateRetryable(ctx context.Context, input *DescribeProjectVersionsInput, output *DescribeProjectVersionsOutput, err error) (bool, error) {
@@ -428,7 +396,16 @@ type ProjectVersionTrainingCompletedWaiterOptions struct {
 	// Set of options to modify how an operation is invoked. These apply to all
 	// operations invoked for this client. Use functional options on operation call to
 	// modify this list for per operation behavior.
+	//
+	// Passing options here is functionally equivalent to passing values to this
+	// config's ClientOptions field that extend the inner client's APIOptions directly.
 	APIOptions []func(*middleware.Stack) error
+
+	// Functional options to be passed to all operations invoked by this client.
+	//
+	// Function values that modify the inner APIOptions are applied after the waiter
+	// config's own APIOptions modifiers.
+	ClientOptions []func(*Options)
 
 	// MinDelay is the minimum amount of time to delay between retries. If unset,
 	// ProjectVersionTrainingCompletedWaiter will use default minimum delay of 120
@@ -436,10 +413,10 @@ type ProjectVersionTrainingCompletedWaiterOptions struct {
 	// MaxDelay.
 	MinDelay time.Duration
 
-	// MaxDelay is the maximum amount of time to delay between retries. If unset or set
-	// to zero, ProjectVersionTrainingCompletedWaiter will use default max delay of 120
-	// seconds. Note that MaxDelay must resolve to value greater than or equal to the
-	// MinDelay.
+	// MaxDelay is the maximum amount of time to delay between retries. If unset or
+	// set to zero, ProjectVersionTrainingCompletedWaiter will use default max delay of
+	// 120 seconds. Note that MaxDelay must resolve to value greater than or equal to
+	// the MinDelay.
 	MaxDelay time.Duration
 
 	// LogWaitAttempts is used to enable logging for waiter retry attempts
@@ -447,12 +424,13 @@ type ProjectVersionTrainingCompletedWaiterOptions struct {
 
 	// Retryable is function that can be used to override the service defined
 	// waiter-behavior based on operation output, or returned error. This function is
-	// used by the waiter to decide if a state is retryable or a terminal state. By
-	// default service-modeled logic will populate this option. This option can thus be
-	// used to define a custom waiter state with fall-back to service-modeled waiter
-	// state mutators.The function returns an error in case of a failure state. In case
-	// of retry state, this function returns a bool value of true and nil error, while
-	// in case of success it returns a bool value of false and nil error.
+	// used by the waiter to decide if a state is retryable or a terminal state.
+	//
+	// By default service-modeled logic will populate this option. This option can
+	// thus be used to define a custom waiter state with fall-back to service-modeled
+	// waiter state mutators.The function returns an error in case of a failure state.
+	// In case of retry state, this function returns a bool value of true and nil
+	// error, while in case of success it returns a bool value of false and nil error.
 	Retryable func(context.Context, *DescribeProjectVersionsInput, *DescribeProjectVersionsOutput, error) (bool, error)
 }
 
@@ -485,8 +463,17 @@ func NewProjectVersionTrainingCompletedWaiter(client DescribeProjectVersionsAPIC
 // maxWaitDur is the maximum wait duration the waiter will wait. The maxWaitDur is
 // required and must be greater than zero.
 func (w *ProjectVersionTrainingCompletedWaiter) Wait(ctx context.Context, params *DescribeProjectVersionsInput, maxWaitDur time.Duration, optFns ...func(*ProjectVersionTrainingCompletedWaiterOptions)) error {
+	_, err := w.WaitForOutput(ctx, params, maxWaitDur, optFns...)
+	return err
+}
+
+// WaitForOutput calls the waiter function for ProjectVersionTrainingCompleted
+// waiter and returns the output of the successful operation. The maxWaitDur is the
+// maximum wait duration the waiter will wait. The maxWaitDur is required and must
+// be greater than zero.
+func (w *ProjectVersionTrainingCompletedWaiter) WaitForOutput(ctx context.Context, params *DescribeProjectVersionsInput, maxWaitDur time.Duration, optFns ...func(*ProjectVersionTrainingCompletedWaiterOptions)) (*DescribeProjectVersionsOutput, error) {
 	if maxWaitDur <= 0 {
-		return fmt.Errorf("maximum wait time for waiter must be greater than zero")
+		return nil, fmt.Errorf("maximum wait time for waiter must be greater than zero")
 	}
 
 	options := w.options
@@ -499,7 +486,7 @@ func (w *ProjectVersionTrainingCompletedWaiter) Wait(ctx context.Context, params
 	}
 
 	if options.MinDelay > options.MaxDelay {
-		return fmt.Errorf("minimum waiter delay %v must be lesser than or equal to maximum waiter delay of %v.", options.MinDelay, options.MaxDelay)
+		return nil, fmt.Errorf("minimum waiter delay %v must be lesser than or equal to maximum waiter delay of %v.", options.MinDelay, options.MaxDelay)
 	}
 
 	ctx, cancelFn := context.WithTimeout(ctx, maxWaitDur)
@@ -522,15 +509,24 @@ func (w *ProjectVersionTrainingCompletedWaiter) Wait(ctx context.Context, params
 		}
 
 		out, err := w.client.DescribeProjectVersions(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
+			for _, opt := range options.ClientOptions {
+				opt(o)
+			}
 		})
 
 		retryable, err := options.Retryable(ctx, params, out, err)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !retryable {
-			return nil
+			return out, nil
 		}
 
 		remainingTime -= time.Since(start)
@@ -543,16 +539,16 @@ func (w *ProjectVersionTrainingCompletedWaiter) Wait(ctx context.Context, params
 			attempt, options.MinDelay, options.MaxDelay, remainingTime,
 		)
 		if err != nil {
-			return fmt.Errorf("error computing waiter delay, %w", err)
+			return nil, fmt.Errorf("error computing waiter delay, %w", err)
 		}
 
 		remainingTime -= delay
 		// sleep for the delay amount before invoking a request
 		if err := smithytime.SleepWithContext(ctx, delay); err != nil {
-			return fmt.Errorf("request cancelled while waiting, %w", err)
+			return nil, fmt.Errorf("request cancelled while waiting, %w", err)
 		}
 	}
-	return fmt.Errorf("exceeded max wait time for ProjectVersionTrainingCompleted waiter")
+	return nil, fmt.Errorf("exceeded max wait time for ProjectVersionTrainingCompleted waiter")
 }
 
 func projectVersionTrainingCompletedStateRetryable(ctx context.Context, input *DescribeProjectVersionsInput, output *DescribeProjectVersionsOutput, err error) (bool, error) {
@@ -616,11 +612,107 @@ func projectVersionTrainingCompletedStateRetryable(ctx context.Context, input *D
 	return true, nil
 }
 
+// DescribeProjectVersionsPaginatorOptions is the paginator options for
+// DescribeProjectVersions
+type DescribeProjectVersionsPaginatorOptions struct {
+	// The maximum number of results to return per paginated call. The largest value
+	// you can specify is 100. If you specify a value greater than 100, a
+	// ValidationException error occurs. The default value is 100.
+	Limit int32
+
+	// Set to true if pagination should stop if the service returns a pagination token
+	// that matches the most recent token provided to the service.
+	StopOnDuplicateToken bool
+}
+
+// DescribeProjectVersionsPaginator is a paginator for DescribeProjectVersions
+type DescribeProjectVersionsPaginator struct {
+	options   DescribeProjectVersionsPaginatorOptions
+	client    DescribeProjectVersionsAPIClient
+	params    *DescribeProjectVersionsInput
+	nextToken *string
+	firstPage bool
+}
+
+// NewDescribeProjectVersionsPaginator returns a new
+// DescribeProjectVersionsPaginator
+func NewDescribeProjectVersionsPaginator(client DescribeProjectVersionsAPIClient, params *DescribeProjectVersionsInput, optFns ...func(*DescribeProjectVersionsPaginatorOptions)) *DescribeProjectVersionsPaginator {
+	if params == nil {
+		params = &DescribeProjectVersionsInput{}
+	}
+
+	options := DescribeProjectVersionsPaginatorOptions{}
+	if params.MaxResults != nil {
+		options.Limit = *params.MaxResults
+	}
+
+	for _, fn := range optFns {
+		fn(&options)
+	}
+
+	return &DescribeProjectVersionsPaginator{
+		options:   options,
+		client:    client,
+		params:    params,
+		firstPage: true,
+		nextToken: params.NextToken,
+	}
+}
+
+// HasMorePages returns a boolean indicating whether more pages are available
+func (p *DescribeProjectVersionsPaginator) HasMorePages() bool {
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
+}
+
+// NextPage retrieves the next DescribeProjectVersions page.
+func (p *DescribeProjectVersionsPaginator) NextPage(ctx context.Context, optFns ...func(*Options)) (*DescribeProjectVersionsOutput, error) {
+	if !p.HasMorePages() {
+		return nil, fmt.Errorf("no more pages available")
+	}
+
+	params := *p.params
+	params.NextToken = p.nextToken
+
+	var limit *int32
+	if p.options.Limit > 0 {
+		limit = &p.options.Limit
+	}
+	params.MaxResults = limit
+
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
+	result, err := p.client.DescribeProjectVersions(ctx, &params, optFns...)
+	if err != nil {
+		return nil, err
+	}
+	p.firstPage = false
+
+	prevToken := p.nextToken
+	p.nextToken = result.NextToken
+
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
+		p.nextToken = nil
+	}
+
+	return result, nil
+}
+
+// DescribeProjectVersionsAPIClient is a client that implements the
+// DescribeProjectVersions operation.
+type DescribeProjectVersionsAPIClient interface {
+	DescribeProjectVersions(context.Context, *DescribeProjectVersionsInput, ...func(*Options)) (*DescribeProjectVersionsOutput, error)
+}
+
+var _ DescribeProjectVersionsAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opDescribeProjectVersions(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "DescribeProjectVersions",
 	}
 }

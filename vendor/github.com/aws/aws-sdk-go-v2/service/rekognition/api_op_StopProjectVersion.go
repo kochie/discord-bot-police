@@ -4,21 +4,26 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
+// This operation applies only to Amazon Rekognition Custom Labels.
+//
 // Stops a running model. The operation might take a while to complete. To check
-// the current status, call DescribeProjectVersions.
+// the current status, call DescribeProjectVersions. Only applies to Custom Labels projects.
+//
+// This operation requires permissions to perform the
+// rekognition:StopProjectVersion action.
 func (c *Client) StopProjectVersion(ctx context.Context, params *StopProjectVersionInput, optFns ...func(*Options)) (*StopProjectVersionOutput, error) {
 	if params == nil {
 		params = &StopProjectVersionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StopProjectVersion", params, optFns, addOperationStopProjectVersionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StopProjectVersion", params, optFns, c.addOperationStopProjectVersionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -30,12 +35,15 @@ func (c *Client) StopProjectVersion(ctx context.Context, params *StopProjectVers
 
 type StopProjectVersionInput struct {
 
-	// The Amazon Resource Name (ARN) of the model version that you want to delete.
+	// The Amazon Resource Name (ARN) of the model version that you want to stop.
+	//
 	// This operation requires permissions to perform the
 	// rekognition:StopProjectVersion action.
 	//
 	// This member is required.
 	ProjectVersionArn *string
+
+	noSmithyDocumentSerde
 }
 
 type StopProjectVersionOutput struct {
@@ -45,9 +53,14 @@ type StopProjectVersionOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStopProjectVersionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStopProjectVersionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStopProjectVersion{}, middleware.After)
 	if err != nil {
 		return err
@@ -56,34 +69,38 @@ func addOperationStopProjectVersionMiddlewares(stack *middleware.Stack, options 
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StopProjectVersion"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -92,10 +109,22 @@ func addOperationStopProjectVersionMiddlewares(stack *middleware.Stack, options 
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStopProjectVersionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStopProjectVersion(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -107,6 +136,9 @@ func addOperationStopProjectVersionMiddlewares(stack *middleware.Stack, options 
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -114,7 +146,6 @@ func newServiceMetadataMiddleware_opStopProjectVersion(region string) *awsmiddle
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StopProjectVersion",
 	}
 }

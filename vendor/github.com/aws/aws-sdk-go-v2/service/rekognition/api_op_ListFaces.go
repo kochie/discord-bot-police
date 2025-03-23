@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
@@ -15,14 +14,15 @@ import (
 // Returns metadata for faces in the specified collection. This metadata includes
 // information such as the bounding box coordinates, the confidence (that the
 // bounding box contains a face), and face ID. For an example, see Listing Faces in
-// a Collection in the Amazon Rekognition Developer Guide. This operation requires
-// permissions to perform the rekognition:ListFaces action.
+// a Collection in the Amazon Rekognition Developer Guide.
+//
+// This operation requires permissions to perform the rekognition:ListFaces action.
 func (c *Client) ListFaces(ctx context.Context, params *ListFacesInput, optFns ...func(*Options)) (*ListFacesOutput, error) {
 	if params == nil {
 		params = &ListFacesInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "ListFaces", params, optFns, addOperationListFacesMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "ListFaces", params, optFns, c.addOperationListFacesMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +39,9 @@ type ListFacesInput struct {
 	// This member is required.
 	CollectionId *string
 
+	// An array of face IDs to filter results with when listing faces in a collection.
+	FaceIds []string
+
 	// Maximum number of faces to return.
 	MaxResults *int32
 
@@ -46,26 +49,36 @@ type ListFacesInput struct {
 	// retrieve), Amazon Rekognition returns a pagination token in the response. You
 	// can use this pagination token to retrieve the next set of faces.
 	NextToken *string
+
+	// An array of user IDs to filter results with when listing faces in a collection.
+	UserId *string
+
+	noSmithyDocumentSerde
 }
 
 type ListFacesOutput struct {
 
 	// Version number of the face detection model associated with the input collection
-	// (CollectionId).
+	// ( CollectionId ).
 	FaceModelVersion *string
 
 	// An array of Face objects.
 	Faces []types.Face
 
-	// If the response is truncated, Amazon Rekognition returns this token that you can
-	// use in the subsequent request to retrieve the next set of faces.
+	// If the response is truncated, Amazon Rekognition returns this token that you
+	// can use in the subsequent request to retrieve the next set of faces.
 	NextToken *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationListFacesMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationListFacesMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpListFaces{}, middleware.After)
 	if err != nil {
 		return err
@@ -74,34 +87,38 @@ func addOperationListFacesMiddlewares(stack *middleware.Stack, options Options) 
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "ListFaces"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -110,10 +127,22 @@ func addOperationListFacesMiddlewares(stack *middleware.Stack, options Options) 
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListFacesValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListFaces(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -125,15 +154,11 @@ func addOperationListFacesMiddlewares(stack *middleware.Stack, options Options) 
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// ListFacesAPIClient is a client that implements the ListFaces operation.
-type ListFacesAPIClient interface {
-	ListFaces(context.Context, *ListFacesInput, ...func(*Options)) (*ListFacesOutput, error)
-}
-
-var _ ListFacesAPIClient = (*Client)(nil)
 
 // ListFacesPaginatorOptions is the paginator options for ListFaces
 type ListFacesPaginatorOptions struct {
@@ -174,12 +199,13 @@ func NewListFacesPaginator(client ListFacesAPIClient, params *ListFacesInput, op
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *ListFacesPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next ListFaces page.
@@ -197,6 +223,9 @@ func (p *ListFacesPaginator) NextPage(ctx context.Context, optFns ...func(*Optio
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListFaces(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -206,18 +235,27 @@ func (p *ListFacesPaginator) NextPage(ctx context.Context, optFns ...func(*Optio
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// ListFacesAPIClient is a client that implements the ListFaces operation.
+type ListFacesAPIClient interface {
+	ListFaces(context.Context, *ListFacesInput, ...func(*Options)) (*ListFacesOutput, error)
+}
+
+var _ ListFacesAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opListFaces(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "ListFaces",
 	}
 }

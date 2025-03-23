@@ -6,42 +6,48 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Gets the segment detection results of a Amazon Rekognition Video analysis
-// started by StartSegmentDetection. Segment detection with Amazon Rekognition
-// Video is an asynchronous operation. You start segment detection by calling
-// StartSegmentDetection which returns a job identifier (JobId). When the segment
-// detection operation finishes, Amazon Rekognition publishes a completion status
-// to the Amazon Simple Notification Service topic registered in the initial call
-// to StartSegmentDetection. To get the results of the segment detection operation,
-// first check that the status value published to the Amazon SNS topic is
-// SUCCEEDED. if so, call GetSegmentDetection and pass the job identifier (JobId)
-// from the initial call of StartSegmentDetection. GetSegmentDetection returns
-// detected segments in an array (Segments) of SegmentDetection objects. Segments
-// is sorted by the segment types specified in the SegmentTypes input parameter of
-// StartSegmentDetection. Each element of the array includes the detected segment,
-// the precentage confidence in the acuracy of the detected segment, the type of
-// the segment, and the frame in which the segment was detected. Use
-// SelectedSegmentTypes to find out the type of segment detection requested in the
-// call to StartSegmentDetection. Use the MaxResults parameter to limit the number
-// of segment detections returned. If there are more results than specified in
-// MaxResults, the value of NextToken in the operation response contains a
-// pagination token for getting the next set of results. To get the next page of
-// results, call GetSegmentDetection and populate the NextToken request parameter
-// with the token value returned from the previous call to GetSegmentDetection. For
-// more information, see Detecting Video Segments in Stored Video in the Amazon
-// Rekognition Developer Guide.
+// started by StartSegmentDetection.
+//
+// Segment detection with Amazon Rekognition Video is an asynchronous operation.
+// You start segment detection by calling StartSegmentDetectionwhich returns a job identifier ( JobId ).
+// When the segment detection operation finishes, Amazon Rekognition publishes a
+// completion status to the Amazon Simple Notification Service topic registered in
+// the initial call to StartSegmentDetection . To get the results of the segment
+// detection operation, first check that the status value published to the Amazon
+// SNS topic is SUCCEEDED . if so, call GetSegmentDetection and pass the job
+// identifier ( JobId ) from the initial call of StartSegmentDetection .
+//
+// GetSegmentDetection returns detected segments in an array ( Segments ) of SegmentDetection
+// objects. Segments is sorted by the segment types specified in the SegmentTypes
+// input parameter of StartSegmentDetection . Each element of the array includes
+// the detected segment, the precentage confidence in the acuracy of the detected
+// segment, the type of the segment, and the frame in which the segment was
+// detected.
+//
+// Use SelectedSegmentTypes to find out the type of segment detection requested in
+// the call to StartSegmentDetection .
+//
+// Use the MaxResults parameter to limit the number of segment detections
+// returned. If there are more results than specified in MaxResults , the value of
+// NextToken in the operation response contains a pagination token for getting the
+// next set of results. To get the next page of results, call GetSegmentDetection
+// and populate the NextToken request parameter with the token value returned from
+// the previous call to GetSegmentDetection .
+//
+// For more information, see Detecting video segments in stored video in the
+// Amazon Rekognition Developer Guide.
 func (c *Client) GetSegmentDetection(ctx context.Context, params *GetSegmentDetectionInput, optFns ...func(*Options)) (*GetSegmentDetectionOutput, error) {
 	if params == nil {
 		params = &GetSegmentDetectionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "GetSegmentDetection", params, optFns, addOperationGetSegmentDetectionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "GetSegmentDetection", params, optFns, c.addOperationGetSegmentDetectionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +61,7 @@ type GetSegmentDetectionInput struct {
 
 	// Job identifier for the text detection operation for which you want results
 	// returned. You get the job identifer from an initial call to
-	// StartSegmentDetection.
+	// StartSegmentDetection .
 	//
 	// This member is required.
 	JobId *string
@@ -67,6 +73,8 @@ type GetSegmentDetectionInput struct {
 	// If the response is truncated, Amazon Rekognition Video returns this token that
 	// you can use in the subsequent request to retrieve the next set of text.
 	NextToken *string
+
+	noSmithyDocumentSerde
 }
 
 type GetSegmentDetectionOutput struct {
@@ -75,11 +83,21 @@ type GetSegmentDetectionOutput struct {
 	// object contains metadata for a single audio stream. Audio information in an
 	// AudioMetadata objects includes the audio codec, the number of audio channels,
 	// the duration of the audio stream, and the sample rate. Audio metadata is
-	// returned in each page of information returned by GetSegmentDetection.
+	// returned in each page of information returned by GetSegmentDetection .
 	AudioMetadata []types.AudioMetadata
+
+	// Job identifier for the segment detection operation for which you want to obtain
+	// results. The job identifer is returned by an initial call to
+	// StartSegmentDetection.
+	JobId *string
 
 	// Current status of the segment detection job.
 	JobStatus types.VideoJobStatus
+
+	// A job identifier specified in the call to StartSegmentDetection and returned in
+	// the job completion notification sent to your Amazon Simple Notification Service
+	// topic.
+	JobTag *string
 
 	// If the previous response was incomplete (because there are more labels to
 	// retrieve), Amazon Rekognition Video returns a pagination token in the response.
@@ -88,29 +106,39 @@ type GetSegmentDetectionOutput struct {
 
 	// An array of segments detected in a video. The array is sorted by the segment
 	// types (TECHNICAL_CUE or SHOT) specified in the SegmentTypes input parameter of
-	// StartSegmentDetection. Within each segment type the array is sorted by timestamp
-	// values.
+	// StartSegmentDetection . Within each segment type the array is sorted by
+	// timestamp values.
 	Segments []types.SegmentDetection
 
 	// An array containing the segment types requested in the call to
-	// StartSegmentDetection.
+	// StartSegmentDetection .
 	SelectedSegmentTypes []types.SegmentTypeInfo
 
 	// If the job fails, StatusMessage provides a descriptive error message.
 	StatusMessage *string
 
+	// Video file stored in an Amazon S3 bucket. Amazon Rekognition video start
+	// operations such as StartLabelDetectionuse Video to specify a video for analysis. The supported
+	// file formats are .mp4, .mov and .avi.
+	Video *types.Video
+
 	// Currently, Amazon Rekognition Video returns a single object in the VideoMetadata
 	// array. The object contains information about the video stream in the input file
 	// that Amazon Rekognition Video chose to analyze. The VideoMetadata object
 	// includes the video codec, video format and other information. Video metadata is
-	// returned in each page of information returned by GetSegmentDetection.
+	// returned in each page of information returned by GetSegmentDetection .
 	VideoMetadata []types.VideoMetadata
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationGetSegmentDetectionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationGetSegmentDetectionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpGetSegmentDetection{}, middleware.After)
 	if err != nil {
 		return err
@@ -119,34 +147,38 @@ func addOperationGetSegmentDetectionMiddlewares(stack *middleware.Stack, options
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "GetSegmentDetection"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -155,10 +187,22 @@ func addOperationGetSegmentDetectionMiddlewares(stack *middleware.Stack, options
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetSegmentDetectionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetSegmentDetection(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -170,16 +214,11 @@ func addOperationGetSegmentDetectionMiddlewares(stack *middleware.Stack, options
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// GetSegmentDetectionAPIClient is a client that implements the GetSegmentDetection
-// operation.
-type GetSegmentDetectionAPIClient interface {
-	GetSegmentDetection(context.Context, *GetSegmentDetectionInput, ...func(*Options)) (*GetSegmentDetectionOutput, error)
-}
-
-var _ GetSegmentDetectionAPIClient = (*Client)(nil)
 
 // GetSegmentDetectionPaginatorOptions is the paginator options for
 // GetSegmentDetection
@@ -222,12 +261,13 @@ func NewGetSegmentDetectionPaginator(client GetSegmentDetectionAPIClient, params
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *GetSegmentDetectionPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next GetSegmentDetection page.
@@ -245,6 +285,9 @@ func (p *GetSegmentDetectionPaginator) NextPage(ctx context.Context, optFns ...f
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetSegmentDetection(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -254,18 +297,28 @@ func (p *GetSegmentDetectionPaginator) NextPage(ctx context.Context, optFns ...f
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// GetSegmentDetectionAPIClient is a client that implements the
+// GetSegmentDetection operation.
+type GetSegmentDetectionAPIClient interface {
+	GetSegmentDetection(context.Context, *GetSegmentDetectionInput, ...func(*Options)) (*GetSegmentDetectionOutput, error)
+}
+
+var _ GetSegmentDetectionAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opGetSegmentDetection(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "GetSegmentDetection",
 	}
 }

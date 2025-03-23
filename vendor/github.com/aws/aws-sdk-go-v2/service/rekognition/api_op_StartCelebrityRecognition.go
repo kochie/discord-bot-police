@@ -4,31 +4,34 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Starts asynchronous recognition of celebrities in a stored video. Amazon
-// Rekognition Video can detect celebrities in a video must be stored in an Amazon
-// S3 bucket. Use Video to specify the bucket name and the filename of the video.
-// StartCelebrityRecognition returns a job identifier (JobId) which you use to get
-// the results of the analysis. When celebrity recognition analysis is finished,
-// Amazon Rekognition Video publishes a completion status to the Amazon Simple
-// Notification Service topic that you specify in NotificationChannel. To get the
-// results of the celebrity recognition analysis, first check that the status value
-// published to the Amazon SNS topic is SUCCEEDED. If so, call
-// GetCelebrityRecognition and pass the job identifier (JobId) from the initial
-// call to StartCelebrityRecognition. For more information, see Recognizing
-// Celebrities in the Amazon Rekognition Developer Guide.
+// Starts asynchronous recognition of celebrities in a stored video.
+//
+// Amazon Rekognition Video can detect celebrities in a video must be stored in an
+// Amazon S3 bucket. Use Videoto specify the bucket name and the filename of the video.
+// StartCelebrityRecognition returns a job identifier ( JobId ) which you use to
+// get the results of the analysis. When celebrity recognition analysis is
+// finished, Amazon Rekognition Video publishes a completion status to the Amazon
+// Simple Notification Service topic that you specify in NotificationChannel . To
+// get the results of the celebrity recognition analysis, first check that the
+// status value published to the Amazon SNS topic is SUCCEEDED . If so, call GetCelebrityRecognition and
+// pass the job identifier ( JobId ) from the initial call to
+// StartCelebrityRecognition .
+//
+// For more information, see Recognizing celebrities in the Amazon Rekognition
+// Developer Guide.
 func (c *Client) StartCelebrityRecognition(ctx context.Context, params *StartCelebrityRecognitionInput, optFns ...func(*Options)) (*StartCelebrityRecognitionOutput, error) {
 	if params == nil {
 		params = &StartCelebrityRecognitionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StartCelebrityRecognition", params, optFns, addOperationStartCelebrityRecognitionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StartCelebrityRecognition", params, optFns, c.addOperationStartCelebrityRecognitionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -59,21 +62,30 @@ type StartCelebrityRecognitionInput struct {
 	JobTag *string
 
 	// The Amazon SNS topic ARN that you want Amazon Rekognition Video to publish the
-	// completion status of the celebrity recognition analysis to.
+	// completion status of the celebrity recognition analysis to. The Amazon SNS topic
+	// must have a topic name that begins with AmazonRekognition if you are using the
+	// AmazonRekognitionServiceRole permissions policy.
 	NotificationChannel *types.NotificationChannel
+
+	noSmithyDocumentSerde
 }
 
 type StartCelebrityRecognitionOutput struct {
 
-	// The identifier for the celebrity recognition analysis job. Use JobId to identify
-	// the job in a subsequent call to GetCelebrityRecognition.
+	// The identifier for the celebrity recognition analysis job. Use JobId to
+	// identify the job in a subsequent call to GetCelebrityRecognition .
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStartCelebrityRecognitionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStartCelebrityRecognitionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStartCelebrityRecognition{}, middleware.After)
 	if err != nil {
 		return err
@@ -82,34 +94,38 @@ func addOperationStartCelebrityRecognitionMiddlewares(stack *middleware.Stack, o
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StartCelebrityRecognition"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -118,10 +134,22 @@ func addOperationStartCelebrityRecognitionMiddlewares(stack *middleware.Stack, o
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStartCelebrityRecognitionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStartCelebrityRecognition(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -133,6 +161,9 @@ func addOperationStartCelebrityRecognitionMiddlewares(stack *middleware.Stack, o
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -140,7 +171,6 @@ func newServiceMetadataMiddleware_opStartCelebrityRecognition(region string) *aw
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StartCelebrityRecognition",
 	}
 }

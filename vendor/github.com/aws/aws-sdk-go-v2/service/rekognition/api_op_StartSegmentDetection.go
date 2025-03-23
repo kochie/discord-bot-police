@@ -4,35 +4,39 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Starts asynchronous detection of segment detection in a stored video. Amazon
-// Rekognition Video can detect segments in a video stored in an Amazon S3 bucket.
-// Use Video to specify the bucket name and the filename of the video.
-// StartSegmentDetection returns a job identifier (JobId) which you use to get the
-// results of the operation. When segment detection is finished, Amazon Rekognition
-// Video publishes a completion status to the Amazon Simple Notification Service
-// topic that you specify in NotificationChannel. You can use the Filters
-// (StartSegmentDetectionFilters) input parameter to specify the minimum detection
-// confidence returned in the response. Within Filters, use ShotFilter
-// (StartShotDetectionFilter) to filter detected shots. Use TechnicalCueFilter
-// (StartTechnicalCueDetectionFilter) to filter technical cues. To get the results
-// of the segment detection operation, first check that the status value published
-// to the Amazon SNS topic is SUCCEEDED. if so, call GetSegmentDetection and pass
-// the job identifier (JobId) from the initial call to StartSegmentDetection. For
-// more information, see Detecting Video Segments in Stored Video in the Amazon
-// Rekognition Developer Guide.
+// Starts asynchronous detection of segment detection in a stored video.
+//
+// Amazon Rekognition Video can detect segments in a video stored in an Amazon S3
+// bucket. Use Videoto specify the bucket name and the filename of the video.
+// StartSegmentDetection returns a job identifier ( JobId ) which you use to get
+// the results of the operation. When segment detection is finished, Amazon
+// Rekognition Video publishes a completion status to the Amazon Simple
+// Notification Service topic that you specify in NotificationChannel .
+//
+// You can use the Filters (StartSegmentDetectionFilters ) input parameter to specify the minimum detection
+// confidence returned in the response. Within Filters , use ShotFilter (StartShotDetectionFilter ) to
+// filter detected shots. Use TechnicalCueFilter (StartTechnicalCueDetectionFilter ) to filter technical cues.
+//
+// To get the results of the segment detection operation, first check that the
+// status value published to the Amazon SNS topic is SUCCEEDED . if so, call GetSegmentDetection and
+// pass the job identifier ( JobId ) from the initial call to StartSegmentDetection
+// .
+//
+// For more information, see Detecting video segments in stored video in the
+// Amazon Rekognition Developer Guide.
 func (c *Client) StartSegmentDetection(ctx context.Context, params *StartSegmentDetectionInput, optFns ...func(*Options)) (*StartSegmentDetectionOutput, error) {
 	if params == nil {
 		params = &StartSegmentDetectionInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StartSegmentDetection", params, optFns, addOperationStartSegmentDetectionMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StartSegmentDetection", params, optFns, c.addOperationStartSegmentDetectionMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -44,15 +48,15 @@ func (c *Client) StartSegmentDetection(ctx context.Context, params *StartSegment
 
 type StartSegmentDetectionInput struct {
 
-	// An array of segment types to detect in the video. Valid values are TECHNICAL_CUE
-	// and SHOT.
+	// An array of segment types to detect in the video. Valid values are
+	// TECHNICAL_CUE and SHOT.
 	//
 	// This member is required.
 	SegmentTypes []types.SegmentType
 
 	// Video file stored in an Amazon S3 bucket. Amazon Rekognition video start
-	// operations such as StartLabelDetection use Video to specify a video for
-	// analysis. The supported file formats are .mp4, .mov and .avi.
+	// operations such as StartLabelDetectionuse Video to specify a video for analysis. The supported
+	// file formats are .mp4, .mov and .avi.
 	//
 	// This member is required.
 	Video *types.Video
@@ -73,21 +77,31 @@ type StartSegmentDetectionInput struct {
 	JobTag *string
 
 	// The ARN of the Amazon SNS topic to which you want Amazon Rekognition Video to
-	// publish the completion status of the segment detection operation.
+	// publish the completion status of the segment detection operation. Note that the
+	// Amazon SNS topic must have a topic name that begins with AmazonRekognition if
+	// you are using the AmazonRekognitionServiceRole permissions policy to access the
+	// topic.
 	NotificationChannel *types.NotificationChannel
+
+	noSmithyDocumentSerde
 }
 
 type StartSegmentDetectionOutput struct {
 
 	// Unique identifier for the segment detection job. The JobId is returned from
-	// StartSegmentDetection.
+	// StartSegmentDetection .
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStartSegmentDetectionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStartSegmentDetectionMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStartSegmentDetection{}, middleware.After)
 	if err != nil {
 		return err
@@ -96,34 +110,38 @@ func addOperationStartSegmentDetectionMiddlewares(stack *middleware.Stack, optio
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StartSegmentDetection"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -132,10 +150,22 @@ func addOperationStartSegmentDetectionMiddlewares(stack *middleware.Stack, optio
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStartSegmentDetectionValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStartSegmentDetection(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -147,6 +177,9 @@ func addOperationStartSegmentDetectionMiddlewares(stack *middleware.Stack, optio
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -154,7 +187,6 @@ func newServiceMetadataMiddleware_opStartSegmentDetection(region string) *awsmid
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StartSegmentDetection",
 	}
 }

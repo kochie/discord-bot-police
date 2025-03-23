@@ -4,31 +4,38 @@ package rekognition
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Starts asynchronous detection of unsafe content in a stored video. Amazon
-// Rekognition Video can moderate content in a video stored in an Amazon S3 bucket.
-// Use Video to specify the bucket name and the filename of the video.
-// StartContentModeration returns a job identifier (JobId) which you use to get the
-// results of the analysis. When unsafe content analysis is finished, Amazon
+//	Starts asynchronous detection of inappropriate, unwanted, or offensive content
+//
+// in a stored video. For a list of moderation labels in Amazon Rekognition, see [Using the image and video moderation APIs].
+//
+// Amazon Rekognition Video can moderate content in a video stored in an Amazon S3
+// bucket. Use Videoto specify the bucket name and the filename of the video.
+// StartContentModeration returns a job identifier ( JobId ) which you use to get
+// the results of the analysis. When content analysis is finished, Amazon
 // Rekognition Video publishes a completion status to the Amazon Simple
-// Notification Service topic that you specify in NotificationChannel. To get the
-// results of the unsafe content analysis, first check that the status value
-// published to the Amazon SNS topic is SUCCEEDED. If so, call GetContentModeration
-// and pass the job identifier (JobId) from the initial call to
-// StartContentModeration. For more information, see Detecting Unsafe Content in
-// the Amazon Rekognition Developer Guide.
+// Notification Service topic that you specify in NotificationChannel .
+//
+// To get the results of the content analysis, first check that the status value
+// published to the Amazon SNS topic is SUCCEEDED . If so, call GetContentModeration and pass the job
+// identifier ( JobId ) from the initial call to StartContentModeration .
+//
+// For more information, see Moderating content in the Amazon Rekognition
+// Developer Guide.
+//
+// [Using the image and video moderation APIs]: https://docs.aws.amazon.com/rekognition/latest/dg/moderation.html#moderation-api
 func (c *Client) StartContentModeration(ctx context.Context, params *StartContentModerationInput, optFns ...func(*Options)) (*StartContentModerationOutput, error) {
 	if params == nil {
 		params = &StartContentModerationInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "StartContentModeration", params, optFns, addOperationStartContentModerationMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "StartContentModeration", params, optFns, c.addOperationStartContentModerationMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +47,8 @@ func (c *Client) StartContentModeration(ctx context.Context, params *StartConten
 
 type StartContentModerationInput struct {
 
-	// The video in which you want to detect unsafe content. The video must be stored
-	// in an Amazon S3 bucket.
+	// The video in which you want to detect inappropriate, unwanted, or offensive
+	// content. The video must be stored in an Amazon S3 bucket.
 	//
 	// This member is required.
 	Video *types.Video
@@ -63,26 +70,35 @@ type StartContentModerationInput struct {
 	// Rekognition is that the moderated content is correctly identified. 0 is the
 	// lowest confidence. 100 is the highest confidence. Amazon Rekognition doesn't
 	// return any moderated content labels with a confidence level lower than this
-	// specified value. If you don't specify MinConfidence, GetContentModeration
+	// specified value. If you don't specify MinConfidence , GetContentModeration
 	// returns labels with confidence values greater than or equal to 50 percent.
 	MinConfidence *float32
 
 	// The Amazon SNS topic ARN that you want Amazon Rekognition Video to publish the
-	// completion status of the unsafe content analysis to.
+	// completion status of the content analysis to. The Amazon SNS topic must have a
+	// topic name that begins with AmazonRekognition if you are using the
+	// AmazonRekognitionServiceRole permissions policy to access the topic.
 	NotificationChannel *types.NotificationChannel
+
+	noSmithyDocumentSerde
 }
 
 type StartContentModerationOutput struct {
 
-	// The identifier for the unsafe content analysis job. Use JobId to identify the
-	// job in a subsequent call to GetContentModeration.
+	// The identifier for the content analysis job. Use JobId to identify the job in a
+	// subsequent call to GetContentModeration .
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationStartContentModerationMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationStartContentModerationMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpStartContentModeration{}, middleware.After)
 	if err != nil {
 		return err
@@ -91,34 +107,38 @@ func addOperationStartContentModerationMiddlewares(stack *middleware.Stack, opti
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "StartContentModeration"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -127,10 +147,22 @@ func addOperationStartContentModerationMiddlewares(stack *middleware.Stack, opti
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStartContentModerationValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opStartContentModeration(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -142,6 +174,9 @@ func addOperationStartContentModerationMiddlewares(stack *middleware.Stack, opti
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -149,7 +184,6 @@ func newServiceMetadataMiddleware_opStartContentModeration(region string) *awsmi
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "StartContentModeration",
 	}
 }

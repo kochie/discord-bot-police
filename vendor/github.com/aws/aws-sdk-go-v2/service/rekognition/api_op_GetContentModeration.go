@@ -6,42 +6,53 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets the unsafe content analysis results for a Amazon Rekognition Video analysis
-// started by StartContentModeration. Unsafe content analysis of a video is an
-// asynchronous operation. You start analysis by calling StartContentModeration
-// which returns a job identifier (JobId). When analysis finishes, Amazon
-// Rekognition Video publishes a completion status to the Amazon Simple
-// Notification Service topic registered in the initial call to
-// StartContentModeration. To get the results of the unsafe content analysis, first
-// check that the status value published to the Amazon SNS topic is SUCCEEDED. If
-// so, call GetContentModeration and pass the job identifier (JobId) from the
-// initial call to StartContentModeration. For more information, see Working with
-// Stored Videos in the Amazon Rekognition Devlopers Guide. GetContentModeration
-// returns detected unsafe content labels, and the time they are detected, in an
-// array, ModerationLabels, of ContentModerationDetection objects. By default, the
-// moderated labels are returned sorted by time, in milliseconds from the start of
-// the video. You can also sort them by moderated label by specifying NAME for the
-// SortBy input parameter. Since video analysis can return a large number of
-// results, use the MaxResults parameter to limit the number of labels returned in
-// a single call to GetContentModeration. If there are more results than specified
-// in MaxResults, the value of NextToken in the operation response contains a
-// pagination token for getting the next set of results. To get the next page of
-// results, call GetContentModeration and populate the NextToken request parameter
-// with the value of NextToken returned from the previous call to
-// GetContentModeration. For more information, see Detecting Unsafe Content in the
-// Amazon Rekognition Developer Guide.
+// Gets the inappropriate, unwanted, or offensive content analysis results for a
+// Amazon Rekognition Video analysis started by StartContentModeration. For a list of moderation labels
+// in Amazon Rekognition, see [Using the image and video moderation APIs].
+//
+// Amazon Rekognition Video inappropriate or offensive content detection in a
+// stored video is an asynchronous operation. You start analysis by calling StartContentModerationwhich
+// returns a job identifier ( JobId ). When analysis finishes, Amazon Rekognition
+// Video publishes a completion status to the Amazon Simple Notification Service
+// topic registered in the initial call to StartContentModeration . To get the
+// results of the content analysis, first check that the status value published to
+// the Amazon SNS topic is SUCCEEDED . If so, call GetContentModeration and pass
+// the job identifier ( JobId ) from the initial call to StartContentModeration .
+//
+// For more information, see Working with Stored Videos in the Amazon Rekognition
+// Devlopers Guide.
+//
+// GetContentModeration returns detected inappropriate, unwanted, or offensive
+// content moderation labels, and the time they are detected, in an array,
+// ModerationLabels , of ContentModerationDetection objects.
+//
+// By default, the moderated labels are returned sorted by time, in milliseconds
+// from the start of the video. You can also sort them by moderated label by
+// specifying NAME for the SortBy input parameter.
+//
+// Since video analysis can return a large number of results, use the MaxResults
+// parameter to limit the number of labels returned in a single call to
+// GetContentModeration . If there are more results than specified in MaxResults ,
+// the value of NextToken in the operation response contains a pagination token
+// for getting the next set of results. To get the next page of results, call
+// GetContentModeration and populate the NextToken request parameter with the
+// value of NextToken returned from the previous call to GetContentModeration .
+//
+// For more information, see moderating content in the Amazon Rekognition
+// Developer Guide.
+//
+// [Using the image and video moderation APIs]: https://docs.aws.amazon.com/rekognition/latest/dg/moderation.html#moderation-api
 func (c *Client) GetContentModeration(ctx context.Context, params *GetContentModerationInput, optFns ...func(*Options)) (*GetContentModerationOutput, error) {
 	if params == nil {
 		params = &GetContentModerationInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "GetContentModeration", params, optFns, addOperationGetContentModerationMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "GetContentModeration", params, optFns, c.addOperationGetContentModerationMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +64,16 @@ func (c *Client) GetContentModeration(ctx context.Context, params *GetContentMod
 
 type GetContentModerationInput struct {
 
-	// The identifier for the unsafe content job. Use JobId to identify the job in a
-	// subsequent call to GetContentModeration.
+	// The identifier for the inappropriate, unwanted, or offensive content moderation
+	// job. Use JobId to identify the job in a subsequent call to GetContentModeration .
 	//
 	// This member is required.
 	JobId *string
+
+	// Defines how to aggregate results of the StartContentModeration request. Default
+	// aggregation option is TIMESTAMPS. SEGMENTS mode aggregates moderation labels
+	// over time.
+	AggregateBy types.ContentModerationAggregateBy
 
 	// Maximum number of results to return per paginated call. The largest value you
 	// can specify is 1000. If you specify a value greater than 1000, a maximum of 1000
@@ -66,46 +82,74 @@ type GetContentModerationInput struct {
 
 	// If the previous response was incomplete (because there is more data to
 	// retrieve), Amazon Rekognition returns a pagination token in the response. You
-	// can use this pagination token to retrieve the next set of unsafe content labels.
+	// can use this pagination token to retrieve the next set of content moderation
+	// labels.
 	NextToken *string
 
 	// Sort to use for elements in the ModerationLabelDetections array. Use TIMESTAMP
 	// to sort array elements by the time labels are detected. Use NAME to
 	// alphabetically group elements for a label together. Within each label group, the
 	// array element are sorted by detection confidence. The default sort is by
-	// TIMESTAMP.
+	// TIMESTAMP .
 	SortBy types.ContentModerationSortBy
+
+	noSmithyDocumentSerde
 }
 
 type GetContentModerationOutput struct {
 
-	// The current status of the unsafe content analysis job.
+	// Information about the paramters used when getting a response. Includes
+	// information on aggregation and sorting methods.
+	GetRequestMetadata *types.GetContentModerationRequestMetadata
+
+	// Job identifier for the content moderation operation for which you want to
+	// obtain results. The job identifer is returned by an initial call to
+	// StartContentModeration.
+	JobId *string
+
+	// The current status of the content moderation analysis job.
 	JobStatus types.VideoJobStatus
 
-	// The detected unsafe content labels and the time(s) they were detected.
+	// A job identifier specified in the call to StartContentModeration and returned
+	// in the job completion notification sent to your Amazon Simple Notification
+	// Service topic.
+	JobTag *string
+
+	// The detected inappropriate, unwanted, or offensive content moderation labels
+	// and the time(s) they were detected.
 	ModerationLabels []types.ContentModerationDetection
 
-	// Version number of the moderation detection model that was used to detect unsafe
-	// content.
+	// Version number of the moderation detection model that was used to detect
+	// inappropriate, unwanted, or offensive content.
 	ModerationModelVersion *string
 
 	// If the response is truncated, Amazon Rekognition Video returns this token that
-	// you can use in the subsequent request to retrieve the next set of unsafe content
-	// labels.
+	// you can use in the subsequent request to retrieve the next set of content
+	// moderation labels.
 	NextToken *string
 
 	// If the job fails, StatusMessage provides a descriptive error message.
 	StatusMessage *string
 
+	// Video file stored in an Amazon S3 bucket. Amazon Rekognition video start
+	// operations such as StartLabelDetectionuse Video to specify a video for analysis. The supported
+	// file formats are .mp4, .mov and .avi.
+	Video *types.Video
+
 	// Information about a video that Amazon Rekognition analyzed. Videometadata is
-	// returned in every page of paginated responses from GetContentModeration.
+	// returned in every page of paginated responses from GetContentModeration .
 	VideoMetadata *types.VideoMetadata
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationGetContentModerationMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationGetContentModerationMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpGetContentModeration{}, middleware.After)
 	if err != nil {
 		return err
@@ -114,34 +158,38 @@ func addOperationGetContentModerationMiddlewares(stack *middleware.Stack, option
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "GetContentModeration"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -150,10 +198,22 @@ func addOperationGetContentModerationMiddlewares(stack *middleware.Stack, option
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetContentModerationValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetContentModeration(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -165,16 +225,11 @@ func addOperationGetContentModerationMiddlewares(stack *middleware.Stack, option
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// GetContentModerationAPIClient is a client that implements the
-// GetContentModeration operation.
-type GetContentModerationAPIClient interface {
-	GetContentModeration(context.Context, *GetContentModerationInput, ...func(*Options)) (*GetContentModerationOutput, error)
-}
-
-var _ GetContentModerationAPIClient = (*Client)(nil)
 
 // GetContentModerationPaginatorOptions is the paginator options for
 // GetContentModeration
@@ -218,12 +273,13 @@ func NewGetContentModerationPaginator(client GetContentModerationAPIClient, para
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *GetContentModerationPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next GetContentModeration page.
@@ -241,6 +297,9 @@ func (p *GetContentModerationPaginator) NextPage(ctx context.Context, optFns ...
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetContentModeration(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -250,18 +309,28 @@ func (p *GetContentModerationPaginator) NextPage(ctx context.Context, optFns ...
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// GetContentModerationAPIClient is a client that implements the
+// GetContentModeration operation.
+type GetContentModerationAPIClient interface {
+	GetContentModeration(context.Context, *GetContentModerationInput, ...func(*Options)) (*GetContentModerationOutput, error)
+}
+
+var _ GetContentModerationAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opGetContentModeration(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "GetContentModeration",
 	}
 }

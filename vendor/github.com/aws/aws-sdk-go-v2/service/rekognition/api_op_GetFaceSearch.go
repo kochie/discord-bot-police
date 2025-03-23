@@ -6,42 +6,47 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets the face search results for Amazon Rekognition Video face search started by
-// StartFaceSearch. The search returns faces in a collection that match the faces
-// of persons detected in a video. It also includes the time(s) that faces are
-// matched in the video. Face search in a video is an asynchronous operation. You
-// start face search by calling to StartFaceSearch which returns a job identifier
-// (JobId). When the search operation finishes, Amazon Rekognition Video publishes
-// a completion status to the Amazon Simple Notification Service topic registered
-// in the initial call to StartFaceSearch. To get the search results, first check
-// that the status value published to the Amazon SNS topic is SUCCEEDED. If so,
-// call GetFaceSearch and pass the job identifier (JobId) from the initial call to
-// StartFaceSearch. For more information, see Searching Faces in a Collection in
-// the Amazon Rekognition Developer Guide. The search results are retured in an
-// array, Persons, of PersonMatch objects. EachPersonMatch element contains details
-// about the matching faces in the input collection, person information (facial
-// attributes, bounding boxes, and person identifer) for the matched person, and
-// the time the person was matched in the video. GetFaceSearch only returns the
-// default
+// Gets the face search results for Amazon Rekognition Video face search started
+// by StartFaceSearch. The search returns faces in a collection that match the faces of persons
+// detected in a video. It also includes the time(s) that faces are matched in the
+// video.
 //
-// facial attributes (BoundingBox, Confidence, Landmarks, Pose, and
-// Quality). The other facial attributes listed in the Face object of the following
-// response syntax are not returned. For more information, see FaceDetail in the
-// Amazon Rekognition Developer Guide. By default, the Persons array is sorted by
-// the time, in milliseconds from the start of the video, persons are matched. You
-// can also sort by persons by specifying INDEX for the SORTBY input parameter.
+// Face search in a video is an asynchronous operation. You start face search by
+// calling to StartFaceSearchwhich returns a job identifier ( JobId ). When the search operation
+// finishes, Amazon Rekognition Video publishes a completion status to the Amazon
+// Simple Notification Service topic registered in the initial call to
+// StartFaceSearch . To get the search results, first check that the status value
+// published to the Amazon SNS topic is SUCCEEDED . If so, call GetFaceSearch and
+// pass the job identifier ( JobId ) from the initial call to StartFaceSearch .
+//
+// For more information, see Searching Faces in a Collection in the Amazon
+// Rekognition Developer Guide.
+//
+// The search results are retured in an array, Persons , of PersonMatch objects. Each
+// PersonMatch element contains details about the matching faces in the input
+// collection, person information (facial attributes, bounding boxes, and person
+// identifer) for the matched person, and the time the person was matched in the
+// video.
+//
+// GetFaceSearch only returns the default facial attributes ( BoundingBox ,
+// Confidence , Landmarks , Pose , and Quality ). The other facial attributes
+// listed in the Face object of the following response syntax are not returned.
+// For more information, see FaceDetail in the Amazon Rekognition Developer Guide.
+//
+// By default, the Persons array is sorted by the time, in milliseconds from the
+// start of the video, persons are matched. You can also sort by persons by
+// specifying INDEX for the SORTBY input parameter.
 func (c *Client) GetFaceSearch(ctx context.Context, params *GetFaceSearchInput, optFns ...func(*Options)) (*GetFaceSearchOutput, error) {
 	if params == nil {
 		params = &GetFaceSearchInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "GetFaceSearch", params, optFns, addOperationGetFaceSearchMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "GetFaceSearch", params, optFns, c.addOperationGetFaceSearchMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +59,7 @@ func (c *Client) GetFaceSearch(ctx context.Context, params *GetFaceSearchInput, 
 type GetFaceSearchInput struct {
 
 	// The job identifer for the search request. You get the job identifier from an
-	// initial call to StartFaceSearch.
+	// initial call to StartFaceSearch .
 	//
 	// This member is required.
 	JobId *string
@@ -64,36 +69,53 @@ type GetFaceSearchInput struct {
 	// results is returned. The default value is 1000.
 	MaxResults *int32
 
-	// If the previous response was incomplete (because there is more search results to
-	// retrieve), Amazon Rekognition Video returns a pagination token in the response.
-	// You can use this pagination token to retrieve the next set of search results.
+	// If the previous response was incomplete (because there is more search results
+	// to retrieve), Amazon Rekognition Video returns a pagination token in the
+	// response. You can use this pagination token to retrieve the next set of search
+	// results.
 	NextToken *string
 
 	// Sort to use for grouping faces in the response. Use TIMESTAMP to group faces by
 	// the time that they are recognized. Use INDEX to sort by recognized faces.
 	SortBy types.FaceSearchSortBy
+
+	noSmithyDocumentSerde
 }
 
 type GetFaceSearchOutput struct {
 
+	// Job identifier for the face search operation for which you want to obtain
+	// results. The job identifer is returned by an initial call to StartFaceSearch.
+	JobId *string
+
 	// The current status of the face search job.
 	JobStatus types.VideoJobStatus
+
+	// A job identifier specified in the call to StartFaceSearch and returned in the
+	// job completion notification sent to your Amazon Simple Notification Service
+	// topic.
+	JobTag *string
 
 	// If the response is truncated, Amazon Rekognition Video returns this token that
 	// you can use in the subsequent request to retrieve the next set of search
 	// results.
 	NextToken *string
 
-	// An array of persons, PersonMatch, in the video whose face(s) match the face(s)
-	// in an Amazon Rekognition collection. It also includes time information for when
+	// An array of persons, PersonMatch, in the video whose face(s) match the face(s) in an
+	// Amazon Rekognition collection. It also includes time information for when
 	// persons are matched in the video. You specify the input collection in an initial
-	// call to StartFaceSearch. Each Persons element includes a time the person was
-	// matched, face match details (FaceMatches) for matching faces in the collection,
-	// and person information (Person) for the matched person.
+	// call to StartFaceSearch . Each Persons element includes a time the person was
+	// matched, face match details ( FaceMatches ) for matching faces in the
+	// collection, and person information ( Person ) for the matched person.
 	Persons []types.PersonMatch
 
 	// If the job fails, StatusMessage provides a descriptive error message.
 	StatusMessage *string
+
+	// Video file stored in an Amazon S3 bucket. Amazon Rekognition video start
+	// operations such as StartLabelDetectionuse Video to specify a video for analysis. The supported
+	// file formats are .mp4, .mov and .avi.
+	Video *types.Video
 
 	// Information about a video that Amazon Rekognition analyzed. Videometadata is
 	// returned in every page of paginated responses from a Amazon Rekognition Video
@@ -102,9 +124,14 @@ type GetFaceSearchOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationGetFaceSearchMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationGetFaceSearchMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpGetFaceSearch{}, middleware.After)
 	if err != nil {
 		return err
@@ -113,34 +140,38 @@ func addOperationGetFaceSearchMiddlewares(stack *middleware.Stack, options Optio
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "GetFaceSearch"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -149,10 +180,22 @@ func addOperationGetFaceSearchMiddlewares(stack *middleware.Stack, options Optio
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetFaceSearchValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetFaceSearch(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -164,15 +207,11 @@ func addOperationGetFaceSearchMiddlewares(stack *middleware.Stack, options Optio
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// GetFaceSearchAPIClient is a client that implements the GetFaceSearch operation.
-type GetFaceSearchAPIClient interface {
-	GetFaceSearch(context.Context, *GetFaceSearchInput, ...func(*Options)) (*GetFaceSearchOutput, error)
-}
-
-var _ GetFaceSearchAPIClient = (*Client)(nil)
 
 // GetFaceSearchPaginatorOptions is the paginator options for GetFaceSearch
 type GetFaceSearchPaginatorOptions struct {
@@ -215,12 +254,13 @@ func NewGetFaceSearchPaginator(client GetFaceSearchAPIClient, params *GetFaceSea
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *GetFaceSearchPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next GetFaceSearch page.
@@ -238,6 +278,9 @@ func (p *GetFaceSearchPaginator) NextPage(ctx context.Context, optFns ...func(*O
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetFaceSearch(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -247,18 +290,27 @@ func (p *GetFaceSearchPaginator) NextPage(ctx context.Context, optFns ...func(*O
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// GetFaceSearchAPIClient is a client that implements the GetFaceSearch operation.
+type GetFaceSearchAPIClient interface {
+	GetFaceSearch(context.Context, *GetFaceSearchInput, ...func(*Options)) (*GetFaceSearchOutput, error)
+}
+
+var _ GetFaceSearchAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opGetFaceSearch(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "GetFaceSearch",
 	}
 }

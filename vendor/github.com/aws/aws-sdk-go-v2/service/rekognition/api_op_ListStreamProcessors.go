@@ -6,20 +6,18 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Gets a list of stream processors that you have created with
-// CreateStreamProcessor.
+// Gets a list of stream processors that you have created with CreateStreamProcessor.
 func (c *Client) ListStreamProcessors(ctx context.Context, params *ListStreamProcessorsInput, optFns ...func(*Options)) (*ListStreamProcessorsOutput, error) {
 	if params == nil {
 		params = &ListStreamProcessorsInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "ListStreamProcessors", params, optFns, addOperationListStreamProcessorsMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "ListStreamProcessors", params, optFns, c.addOperationListStreamProcessorsMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +38,8 @@ type ListStreamProcessorsInput struct {
 	// the response. You can use this pagination token to retrieve the next set of
 	// stream processors.
 	NextToken *string
+
+	noSmithyDocumentSerde
 }
 
 type ListStreamProcessorsOutput struct {
@@ -54,9 +54,14 @@ type ListStreamProcessorsOutput struct {
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationListStreamProcessorsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationListStreamProcessorsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsAwsjson11_serializeOpListStreamProcessors{}, middleware.After)
 	if err != nil {
 		return err
@@ -65,34 +70,38 @@ func addOperationListStreamProcessorsMiddlewares(stack *middleware.Stack, option
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "ListStreamProcessors"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -101,7 +110,19 @@ func addOperationListStreamProcessorsMiddlewares(stack *middleware.Stack, option
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListStreamProcessors(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -113,16 +134,11 @@ func addOperationListStreamProcessorsMiddlewares(stack *middleware.Stack, option
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// ListStreamProcessorsAPIClient is a client that implements the
-// ListStreamProcessors operation.
-type ListStreamProcessorsAPIClient interface {
-	ListStreamProcessors(context.Context, *ListStreamProcessorsInput, ...func(*Options)) (*ListStreamProcessorsOutput, error)
-}
-
-var _ ListStreamProcessorsAPIClient = (*Client)(nil)
 
 // ListStreamProcessorsPaginatorOptions is the paginator options for
 // ListStreamProcessors
@@ -165,12 +181,13 @@ func NewListStreamProcessorsPaginator(client ListStreamProcessorsAPIClient, para
 		client:    client,
 		params:    params,
 		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
 
 // HasMorePages returns a boolean indicating whether more pages are available
 func (p *ListStreamProcessorsPaginator) HasMorePages() bool {
-	return p.firstPage || p.nextToken != nil
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
 }
 
 // NextPage retrieves the next ListStreamProcessors page.
@@ -188,6 +205,9 @@ func (p *ListStreamProcessorsPaginator) NextPage(ctx context.Context, optFns ...
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListStreamProcessors(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -197,18 +217,28 @@ func (p *ListStreamProcessorsPaginator) NextPage(ctx context.Context, optFns ...
 	prevToken := p.nextToken
 	p.nextToken = result.NextToken
 
-	if p.options.StopOnDuplicateToken && prevToken != nil && p.nextToken != nil && *prevToken == *p.nextToken {
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
 		p.nextToken = nil
 	}
 
 	return result, nil
 }
 
+// ListStreamProcessorsAPIClient is a client that implements the
+// ListStreamProcessors operation.
+type ListStreamProcessorsAPIClient interface {
+	ListStreamProcessors(context.Context, *ListStreamProcessorsInput, ...func(*Options)) (*ListStreamProcessorsOutput, error)
+}
+
+var _ ListStreamProcessorsAPIClient = (*Client)(nil)
+
 func newServiceMetadataMiddleware_opListStreamProcessors(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "rekognition",
 		OperationName: "ListStreamProcessors",
 	}
 }

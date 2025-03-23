@@ -1,18 +1,34 @@
-package main
+package directives
 
 import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/dgvoice"
 	"github.com/bwmarrin/discordgo"
 )
 
-func aoeTaunts(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) {
+var reg1 *regexp.Regexp
+var mutex *sync.Mutex
+var timer *time.Timer
+
+func init() {
+	r1, err := regexp.Compile(`^\d+$`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	reg1 = r1
+
+	mutex = &sync.Mutex{}
+}
+
+func AoeTaunts(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.ChannelID == os.Getenv("PIZZAGATE_ID") {
 
 		if reg1.MatchString(m.Content) {

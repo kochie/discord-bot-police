@@ -1,4 +1,4 @@
-package main
+package directives
 
 import (
 	"log"
@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func animeDetection(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func AnimeDetection(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.Contains(processedString, "anime") {
 		err := s.MessageReactionAdd(m.ChannelID, m.ID, "😡")
 		if err != nil {
