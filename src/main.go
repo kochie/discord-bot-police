@@ -56,12 +56,7 @@ func main() {
 
 	log.Println("Adding commands...")
 	// Need to overwrite the commands to get the command ID
-
-	_, err = dg.ApplicationCommandBulkOverwrite(os.Getenv("APPLICATION_ID"), ServerId, commands.Commands)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	commands.SyncCommands(dg, ServerId, commands.Commands)
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")

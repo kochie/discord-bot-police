@@ -5,6 +5,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
 var rdb *redis.Client
@@ -17,6 +19,37 @@ func init() {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
+
+	ticker := time.NewTicker(5 * time.Hour)
+	// decrement the commie score every 5 hours
+	go func() {
+		DecrementCommieScore()
+		for {
+			select {
+			case <-ticker.C:
+				DecrementCommieScore()
+			}
+		}
+	}()
+}
+
+// DecrementCommieScore is a function that decrements the commie score of all users
+func DecrementCommieScore() {
+	log.Println("Decrementing commie values")
+	users := rdb.HGetAll(ctx, "commie").Val()
+	for user, score := range users {
+		i, err := strconv.ParseInt(score, 10, 64)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		if i > 0 {
+			err = rdb.HIncrBy(ctx, "commie", user, -1).Err()
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}
 }
 
 func GetSettings() map[string]string {
@@ -48,6 +81,23 @@ func UpdateFurryScore(userID string, score int) int {
 	}
 
 	furryScore, err := rdb.HGet(ctx, "furry", userID).Int()
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+
+	return furryScore
+}
+
+func UpdateCommieScore(userID string, score int) int {
+
+	err := rdb.HIncrBy(ctx, "commie", userID, int64(score)).Err()
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+
+	furryScore, err := rdb.HGet(ctx, "commie", userID).Int()
 	if err != nil {
 		log.Println(err)
 		return 0

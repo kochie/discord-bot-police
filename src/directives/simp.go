@@ -29,15 +29,19 @@ func SimpDetection(processedString string, s *discordgo.Session, m *discordgo.Me
 				log.Println(err)
 				return true
 			}
-			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-				Files: []*discordgo.File{{
-					Name:        filepath.Base(filename),
-					ContentType: util.GetContentType(filename),
-					Reader:      file,
-				}},
-			})
-			if err != nil {
-				log.Println(err)
+			// only sand simp images randomly so less annoying
+
+			if rand.Float64() > 0.85 {
+				_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+					Files: []*discordgo.File{{
+						Name:        filepath.Base(filename),
+						ContentType: util.GetContentType(filename),
+						Reader:      file,
+					}},
+				})
+				if err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}
