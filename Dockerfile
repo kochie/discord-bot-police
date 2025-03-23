@@ -2,15 +2,28 @@ FROM golang AS golang
 
 WORKDIR /go/src/policebot
 
-RUN apt update && apt list libopus-dev && apt install -y \
+RUN apt update && apt install -y \
     tzdata \
     zip \
     ca-certificates \
-    libopus-dev=1.3.1-3 \
     ffmpeg \
     build-essential \
     git \
     pkgconf
+
+# Download, build and install Opus 1.1.2
+RUN wget https://archive.mozilla.org/pub/opus/opus-1.1.2.tar.gz \
+    && tar -xzvf opus-1.1.2.tar.gz \
+    && cd opus-1.1.2 \
+    && ./configure \
+    && make \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf opus-1.1.2 opus-1.1.2.tar.gz
+
+# Verify installation
+RUN pkg-config --modversion opus
 
 COPY . .
 
