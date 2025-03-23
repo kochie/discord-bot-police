@@ -1,24 +1,11 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/redis/go-redis/v9"
+	"github.com/kochie/discord-bot-police/src/database"
 	"log"
-	"os"
 )
-
-var rdb *redis.Client
-var ctx = context.Background()
-
-func init() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-}
 
 var Commands = []*discordgo.ApplicationCommand{
 	{
@@ -123,44 +110,19 @@ var CommandHandlers = map[string]func(s *discordgo.Session, i *discordgo.Interac
 		switch options[0].Name {
 		case "taunts":
 			// Enable AOE taunts
-			err := rdb.HSet(ctx, "settings", "AOE_TAUNTS", "true").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			database.UpdateSettings("AOE_TAUNTS", "true")
 		case "furry":
 			// Enable furry detection
-			err := rdb.HSet(ctx, "settings", "DETECT_FURRY", "true").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			database.UpdateSettings("DETECT_FURRY", "true")
 		case "anime":
 			// Enable anime detection
-			err := rdb.HSet(ctx, "settings", "DETECT_ANIME", "true").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			database.UpdateSettings("DETECT_ANIME", "true")
 		case "simp":
 			// Enable simp detection
-			err := rdb.HSet(ctx, "settings", "DETECT_SIMP", "true").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			database.UpdateSettings("DETECT_SIMP", "true")
 		case "commie":
 			// Enable commie detection
-			err := rdb.HSet(ctx, "settings", "DETECT_COMMIE", "true").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			database.UpdateSettings("DETECT_COMMIE", "true")
 		default:
 			errorResponse(fmt.Errorf("unknown option"), s, i)
 		}
@@ -182,45 +144,20 @@ var CommandHandlers = map[string]func(s *discordgo.Session, i *discordgo.Interac
 
 		switch options[0].Name {
 		case "taunts":
-			// Disable AOE taunts
-			err := rdb.HSet(ctx, "settings", "AOE_TAUNTS", "false").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			// Enable AOE taunts
+			database.UpdateSettings("AOE_TAUNTS", "false")
 		case "furry":
-			// Disable furry detection
-			err := rdb.HSet(ctx, "settings", "DETECT_FURRY", "false").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			// Enable furry detection
+			database.UpdateSettings("DETECT_FURRY", "false")
 		case "anime":
-			// Disable anime detection
-			err := rdb.HSet(ctx, "settings", "DETECT_ANIME", "false").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			// Enable anime detection
+			database.UpdateSettings("DETECT_ANIME", "false")
 		case "simp":
-			// Disable simp detection
-			err := rdb.HSet(ctx, "settings", "DETECT_SIMP", "false").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			// Enable simp detection
+			database.UpdateSettings("DETECT_SIMP", "false")
 		case "commie":
-			// Disable commie detection
-			err := rdb.HSet(ctx, "settings", "DETECT_COMMIE", "false").Err()
-			if err != nil {
-				log.Println(err)
-				errorResponse(err, s, i)
-				return
-			}
+			// Enable commie detection
+			database.UpdateSettings("DETECT_COMMIE", "false")
 		default:
 			errorResponse(fmt.Errorf("unknown option"), s, i)
 		}

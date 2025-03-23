@@ -1,12 +1,11 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/kochie/discord-bot-police/src/commands"
+	"github.com/kochie/discord-bot-police/src/database"
 	"github.com/kochie/discord-bot-police/src/directives"
-	"github.com/redis/go-redis/v9"
 	"log"
 	"os"
 	"os/signal"
@@ -16,8 +15,6 @@ import (
 )
 
 var reg *regexp.Regexp
-var rdb *redis.Client
-var ctx = context.Background()
 var ServerId = os.Getenv("SERVER_ID")
 
 func init() {
@@ -28,11 +25,6 @@ func init() {
 	}
 	reg = r
 
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
 }
 
 func addCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -95,11 +87,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	processedString := reg.ReplaceAllString(strings.ToLower(m.Content), "")
 
-	settings, err := rdb.HGetAll(ctx, "settings").Result()
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	settings := database.GetSettings()
 
 	if enabled, ok := settings["DETECT_ANIME"]; ok && enabled == "true" {
 		directives.AnimeDetection(processedString, s, m)
