@@ -34,7 +34,7 @@ func AoeTaunts(processedString string, s *discordgo.Session, m *discordgo.Messag
 		if reg1.MatchString(m.Content) {
 			taunt, err := strconv.ParseInt(processedString, 10, 32)
 			if err != nil {
-				log.Println(err)
+				return
 			}
 			entries, err := os.ReadDir("assets/taunts")
 			if err != nil {
