@@ -2,11 +2,11 @@ FROM golang AS golang
 
 WORKDIR /go/src/policebot
 
-RUN apt update && apt install -y \
+RUN apt update && apt list libopus-dev && apt install -y \
     tzdata \
     zip \
     ca-certificates \
-    libopus-dev \
+    libopus-dev=1.3.1-3 \
     ffmpeg \
     build-essential \
     git \
