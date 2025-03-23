@@ -9,7 +9,8 @@ RUN apt update && apt install -y \
     ffmpeg \
     build-essential \
     git \
-    pkgconf
+    pkgconf \
+    libopus-dev
 
 # Download, build and install Opus 1.1.2
 # Keep this for the moment, I've got a suspicion that the vendored version will be the wrong platform.
