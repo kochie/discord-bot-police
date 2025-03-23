@@ -1,16 +1,14 @@
-FROM golang:alpine AS golang
+FROM golang AS golang
 
 WORKDIR /go/src/policebot
 
-RUN apk add \
+RUN apt update && apt install -y \
     tzdata \
     zip \
     ca-certificates \
-    opus-tools \
-    opus-dev\
-    opus \
+    libopus-dev \
     ffmpeg \
-    build-base \
+    build-essential \
     git \
     pkgconf
 
