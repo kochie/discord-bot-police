@@ -63,13 +63,12 @@ func main() {
 	}
 
 	log.Println("Adding commands...")
-	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands.Commands))
-	for i, v := range commands.Commands {
-		cmd, err := dg.ApplicationCommandCreate(dg.State.User.ID, ServerId, v)
-		if err != nil {
-			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
-		}
-		registeredCommands[i] = cmd
+	// Need to overwrite the commands to get the command ID
+
+	_, err = dg.ApplicationCommandBulkOverwrite(os.Getenv("APPLICATION_ID"), ServerId, commands.Commands)
+	if err != nil {
+		log.Println(err)
+		return
 	}
 
 	// Wait here until CTRL-C or other term signal is received.
