@@ -7,11 +7,12 @@ RUN apk add \
     zip \
     ca-certificates \
     opus-tools \
+    opus-dev\
+    opus \
     ffmpeg \
     build-base \
     git \
-    pkgconf \
-    opus-dev
+    pkgconf
 
 COPY . .
 
