@@ -19,7 +19,7 @@ func CommieDetection(processedString string, s *discordgo.Session, m *discordgo.
 	}) {
 		//filename := "assets/Joseph_McCarthy.jpg"
 
-		err := s.MessageReactionAdd(m.ChannelID, m.ID, "ussr:695565659303706745")
+		err := s.MessageReactionAdd(m.ChannelID, m.ID, "ussr:906835494598496306")
 
 		//if m.Author.ID == os.Getenv("KNOWN_COMMUNIST_ID") {
 		//	filename = "assets/commie.mp4"
