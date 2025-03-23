@@ -1,7 +1,7 @@
 package directives
 
 import (
-	"github.com/kochie/discord-bot-police/src"
+	"github.com/kochie/discord-bot-police/src/util"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,7 +10,7 @@ import (
 )
 
 func CommieDetection(processedString string, s *discordgo.Session, m *discordgo.MessageCreate) {
-	if main.compareList(processedString, []string{
+	if util.CompareList(processedString, []string{
 		"communist",
 		"commie",
 		"communism",
@@ -33,7 +33,7 @@ func CommieDetection(processedString string, s *discordgo.Session, m *discordgo.
 		_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 			Files: []*discordgo.File{{
 				Name:        filepath.Base(filename),
-				ContentType: main.getContentType(filename),
+				ContentType: util.GetContentType(filename),
 				Reader:      file,
 			}},
 		})

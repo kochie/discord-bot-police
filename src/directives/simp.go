@@ -2,6 +2,7 @@ package directives
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/kochie/discord-bot-police/src/util"
 	"log"
 	"math/rand"
 	"os"
@@ -31,7 +32,7 @@ func SimpDetection(processedString string, s *discordgo.Session, m *discordgo.Me
 			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 				Files: []*discordgo.File{{
 					Name:        filepath.Base(filename),
-					ContentType: main.getContentType(filename),
+					ContentType: util.GetContentType(filename),
 					Reader:      file,
 				}},
 			})
