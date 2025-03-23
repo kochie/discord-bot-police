@@ -25,7 +25,7 @@ RUN apt update && apt install -y \
 #    && rm -rf opus-1.1.2 opus-1.1.2.tar.gz
 
 # Verify installation
-RUN #pkg-config --modversion opus
+# RUN pkg-config --modversion opus
 
 COPY . .
 
