@@ -34,6 +34,26 @@ var Commands = []*discordgo.ApplicationCommand{
 				Type:        discordgo.ApplicationCommandOptionSubCommand,
 				Description: "Enable AOE voice taunts",
 			},
+			{
+				Name:        "furry",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Enable furry detection",
+			},
+			{
+				Name:        "anime",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Enable anime detection",
+			},
+			{
+				Name:        "simp",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Enable simp detection",
+			},
+			{
+				Name:        "commie",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Enable commie detection",
+			},
 		},
 	},
 	{
@@ -44,6 +64,26 @@ var Commands = []*discordgo.ApplicationCommand{
 				Name:        "taunts",
 				Type:        discordgo.ApplicationCommandOptionSubCommand,
 				Description: "Disable AOE voice taunts",
+			},
+			{
+				Name:        "furry",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Disable furry detection",
+			},
+			{
+				Name:        "anime",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Disable anime detection",
+			},
+			{
+				Name:        "simp",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Disable simp detection",
+			},
+			{
+				Name:        "commie",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "Disable communist detection",
 			},
 		},
 	},
@@ -89,6 +129,38 @@ var CommandHandlers = map[string]func(s *discordgo.Session, i *discordgo.Interac
 				errorResponse(err, s, i)
 				return
 			}
+		case "furry":
+			// Enable furry detection
+			err := rdb.HSet(ctx, "settings", "DETECT_FURRY", "true").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "anime":
+			// Enable anime detection
+			err := rdb.HSet(ctx, "settings", "DETECT_ANIME", "true").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "simp":
+			// Enable simp detection
+			err := rdb.HSet(ctx, "settings", "DETECT_SIMP", "true").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "commie":
+			// Enable commie detection
+			err := rdb.HSet(ctx, "settings", "DETECT_COMMIE", "true").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
 		default:
 			errorResponse(fmt.Errorf("unknown option"), s, i)
 		}
@@ -112,6 +184,38 @@ var CommandHandlers = map[string]func(s *discordgo.Session, i *discordgo.Interac
 		case "taunts":
 			// Disable AOE taunts
 			err := rdb.HSet(ctx, "settings", "AOE_TAUNTS", "false").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "furry":
+			// Disable furry detection
+			err := rdb.HSet(ctx, "settings", "DETECT_FURRY", "false").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "anime":
+			// Disable anime detection
+			err := rdb.HSet(ctx, "settings", "DETECT_ANIME", "false").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "simp":
+			// Disable simp detection
+			err := rdb.HSet(ctx, "settings", "DETECT_SIMP", "false").Err()
+			if err != nil {
+				log.Println(err)
+				errorResponse(err, s, i)
+				return
+			}
+		case "commie":
+			// Disable commie detection
+			err := rdb.HSet(ctx, "settings", "DETECT_COMMIE", "false").Err()
 			if err != nil {
 				log.Println(err)
 				errorResponse(err, s, i)
