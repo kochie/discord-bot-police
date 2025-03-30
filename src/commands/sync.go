@@ -5,6 +5,23 @@ import (
 	"log"
 )
 
+func DeleteAllCommands(s *discordgo.Session, guildID string) {
+	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
+	if err != nil {
+		log.Fatalf("Failed to fetch commands for guild %s: %v", guildID, err)
+		return
+	}
+
+	for _, cmd := range existingCommands {
+		err := s.ApplicationCommandDelete(s.State.User.ID, guildID, cmd.ID)
+		if err != nil {
+			log.Printf("Failed to delete command %s (%s) in guild %s: %v", cmd.Name, cmd.ID, guildID, err)
+		} else {
+			log.Printf("Successfully deleted command %s (%s) in guild %s", cmd.Name, cmd.ID, guildID)
+		}
+	}
+}
+
 func SyncCommands(s *discordgo.Session, guildID string, desiredCommandList []*discordgo.ApplicationCommand) {
 	existingCommands, err := s.ApplicationCommands(s.State.User.ID, guildID)
 	if err != nil {

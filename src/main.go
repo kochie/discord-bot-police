@@ -102,4 +102,5 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if enabled, ok := settings["DETECT_CELEB"]; ok && enabled == "true" {
 		directives.CelebDetection(s, m)
 	}
+
 }

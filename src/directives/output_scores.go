@@ -12,6 +12,7 @@ import (
 func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	commies := database.GetAllCommieScores()
 	furries := database.GetAllFurryScores()
+	dirty := database.GetDirtyScores()
 
 	// Get the unique keys of users for both maps
 	userIds := make([]string, 1)
@@ -31,9 +32,22 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			userIds = append(userIds, id)
 		}
 	}
+	for id, _ := range dirty {
+		// Check if the user is already in the list
+		found := false
+		for _, userId := range userIds {
+			if userId == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			userIds = append(userIds, id)
+		}
+	}
 
 	t := table.NewWriter()
-	t.AppendHeader(table.Row{"Name", "Commie Score", "Furry Score", "Total Degeneracy Score"})
+	t.AppendHeader(table.Row{"Name", "Commie Score", "Furry Score", "Cum Score", "Total Degeneracy Score"})
 	for _, userId := range userIds {
 		st, err := s.User(userId)
 		if err != nil {
@@ -51,7 +65,12 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			furryScore, err = strconv.ParseInt(score, 10, 64)
 		}
 
-		t.AppendRow(table.Row{st.Username, commieScore, furryScore, commieScore + furryScore})
+		dirtyScore := int64(0)
+		if score, ok := dirty[userId]; ok {
+			dirtyScore, err = strconv.ParseInt(score, 10, 64)
+		}
+
+		t.AppendRow(table.Row{st.Username, commieScore, furryScore, dirtyScore, commieScore + furryScore + dirtyScore})
 	}
 
 	_, err := s.ChannelMessageSend(i.ChannelID, fmt.Sprintf("```%s```", t.Render()))

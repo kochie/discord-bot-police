@@ -124,3 +124,39 @@ func GetAllCommieScores() map[string]string {
 
 	return furryScores
 }
+
+func UpdateDirtyScore(userID string, score int) {
+	err := rdb.HIncrBy(ctx, "dirty", userID, int64(score)).Err()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	dirtyScore, err := rdb.HGet(ctx, "dirty", userID).Int()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println("Dirty score for user " + userID + " is now " + strconv.Itoa(dirtyScore))
+}
+
+func GetDirtyScore(userID string) int {
+	dirtyScore, err := rdb.HGet(ctx, "dirty", userID).Int()
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+
+	return dirtyScore
+}
+
+func GetDirtyScores() map[string]string {
+	dirtyScores, err := rdb.HGetAll(ctx, "dirty").Result()
+	if err != nil {
+		log.Println(err)
+		return map[string]string{}
+	}
+
+	return dirtyScores
+}
