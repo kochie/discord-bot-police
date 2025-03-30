@@ -75,9 +75,9 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	t.SortBy([]table.SortBy{
-		{Name: "Total Degeneracy Score", Mode: table.DscNumeric},
+		{Name: "Total Degeneracy\nScore", Mode: table.DscNumeric},
 	})
-	
+
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
