@@ -47,7 +47,7 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	t := table.NewWriter()
-	t.AppendHeader(table.Row{"Name", "Commie Score", "Furry Score", "Cum Score", "Total Degeneracy Score"})
+	t.AppendHeader(table.Row{"Name", "Commie\nScore", "Furry\nScore", "Cum\nScore", "Total Degeneracy\nScore", "JWDS\nScore"})
 	for _, userId := range userIds {
 		st, err := s.User(userId)
 		if err != nil {
@@ -70,10 +70,16 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			dirtyScore, err = strconv.ParseInt(score, 10, 64)
 		}
 
-		t.AppendRow(table.Row{st.Username, commieScore, furryScore, dirtyScore, commieScore + furryScore + dirtyScore})
+		jwds := 2*commieScore + 3*furryScore + dirtyScore
+		t.AppendRow(table.Row{st.Username, commieScore, furryScore, dirtyScore, commieScore + furryScore + dirtyScore, jwds})
 	}
 
-	_, err := s.ChannelMessageSend(i.ChannelID, fmt.Sprintf("```%s```", t.Render()))
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: fmt.Sprintf("```%s```", t.Render()),
+		},
+	})
 	if err != nil {
 		// Handle error
 		log.Println(err)
