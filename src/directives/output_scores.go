@@ -1,6 +1,7 @@
 package directives
 
 import (
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/kochie/discord-bot-police/src/database"
@@ -53,7 +54,7 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		t.AppendRow(table.Row{st.Username, commieScore, furryScore, commieScore + furryScore})
 	}
 
-	_, err := s.ChannelMessageSend(i.ChannelID, t.Render())
+	_, err := s.ChannelMessageSend(i.ChannelID, fmt.Sprintf("```%s```", t.Render()))
 	if err != nil {
 		// Handle error
 		log.Println(err)
