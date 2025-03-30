@@ -105,3 +105,23 @@ func UpdateCommieScore(userID string, score int) int {
 
 	return furryScore
 }
+
+func GetAllFurryScores() map[string]string {
+	furryScores, err := rdb.HGetAll(ctx, "furry").Result()
+	if err != nil {
+		log.Println(err)
+		return map[string]string{}
+	}
+
+	return furryScores
+}
+
+func GetAllCommieScores() map[string]string {
+	furryScores, err := rdb.HGetAll(ctx, "commie").Result()
+	if err != nil {
+		log.Println(err)
+		return map[string]string{}
+	}
+
+	return furryScores
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/kochie/discord-bot-police/src/database"
+	"github.com/kochie/discord-bot-police/src/directives"
 	"log"
 )
 
@@ -73,6 +74,10 @@ var Commands = []*discordgo.ApplicationCommand{
 				Description: "Disable communist detection",
 			},
 		},
+	},
+	{
+		Name:        "scores",
+		Description: "Get the scores of the server",
 	},
 }
 
@@ -172,5 +177,8 @@ var CommandHandlers = map[string]func(s *discordgo.Session, i *discordgo.Interac
 		if err != nil {
 			log.Println(err)
 		}
+	},
+	"scores": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		directives.OutputScores(s, i)
 	},
 }
