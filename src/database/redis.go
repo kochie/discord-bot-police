@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"time"
 )
 
 var rdb *redis.Client
@@ -20,17 +19,17 @@ func init() {
 		DB:       0,  // use default DB
 	})
 
-	ticker := time.NewTicker(5 * time.Hour)
-	// decrement the commie score every 5 hours
-	go func() {
-		DecrementCommieScore()
-		for {
-			select {
-			case <-ticker.C:
-				DecrementCommieScore()
-			}
-		}
-	}()
+	//ticker := time.NewTicker(5 * time.Hour)
+	//// decrement the commie score every 5 hours
+	//go func() {
+	//	DecrementCommieScore()
+	//	for {
+	//		select {
+	//		case <-ticker.C:
+	//			DecrementCommieScore()
+	//		}
+	//	}
+	//}()
 }
 
 // DecrementCommieScore is a function that decrements the commie score of all users
