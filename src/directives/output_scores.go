@@ -74,6 +74,10 @@ func OutputScores(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		t.AppendRow(table.Row{st.Username, commieScore, furryScore, dirtyScore, commieScore + furryScore + dirtyScore, jwds})
 	}
 
+	t.SortBy([]table.SortBy{
+		{Name: "Total Degeneracy Score", Mode: table.DscNumeric},
+	})
+	
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
